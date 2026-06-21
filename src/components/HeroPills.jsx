@@ -67,18 +67,46 @@ export default function HeroPills() {
         // Triangular brand-mark pose. Pivots chosen to approximate the
         // original inline mark in Hero.jsx.
         if (idx === 0)
-          return { x: cx + 12, y: cy - 38, w: 38, h: 96, rotate: 45, opacity: 1 };
+          return {
+            x: cx + 12,
+            y: cy - 38,
+            w: 38,
+            h: 96,
+            rotate: 45,
+            opacity: 1,
+          };
         if (idx === 1)
-          return { x: cx - 19, y: cy - 60, w: 38, h: 118, rotate: 0, opacity: 1 };
+          return {
+            x: cx - 19,
+            y: cy - 60,
+            w: 38,
+            h: 118,
+            rotate: 0,
+            opacity: 1,
+          };
         if (idx === 2)
-          return { x: cx - 50, y: cy - 38, w: 38, h: 96, rotate: -45, opacity: 1 };
+          return {
+            x: cx - 50,
+            y: cy - 38,
+            w: 38,
+            h: 96,
+            rotate: -45,
+            opacity: 1,
+          };
       }
 
       if (phase === "video") {
         const v = video || FB;
         const p = play || FB;
         if (idx === 0)
-          return { x: v.x, y: v.y - 6, w: v.width, h: 5, rotate: 0, opacity: 0.85 };
+          return {
+            x: v.x,
+            y: v.y - 6,
+            w: v.width,
+            h: 5,
+            rotate: 0,
+            opacity: 0.85,
+          };
         if (idx === 1) {
           const size = Math.max(p.width, p.height) * 1.6 || 140;
           return {
@@ -104,7 +132,14 @@ export default function HeroPills() {
       if (phase === "features") {
         const f = features || FB;
         if (idx === 0)
-          return { x: f.x, y: f.y - 4, w: f.width, h: 3, rotate: 0, opacity: 0.75 };
+          return {
+            x: f.x,
+            y: f.y - 4,
+            w: f.width,
+            h: 3,
+            rotate: 0,
+            opacity: 0.75,
+          };
         if (idx === 1)
           return {
             x: f.x + f.width / 2 - 2,
@@ -214,17 +249,32 @@ export default function HeroPills() {
       <div
         ref={blueRef}
         className="glass-panel absolute rounded-full bg-gradient-to-r from-[#264A9F]/50 to-[#264A9F]/80"
-        style={{ left: 0, top: 0, transformOrigin: "center center", willChange: "transform, width, height, opacity" }}
+        style={{
+          left: -8,
+          top: -10,
+          transformOrigin: "center center",
+          willChange: "transform, width, height, opacity",
+        }}
       />
       <div
         ref={azureRef}
         className="glass-panel absolute rounded-full bg-gradient-to-r from-[#4272B8]/60 to-[#4272B8]/80"
-        style={{ left: 0, top: 0, transformOrigin: "center center", willChange: "transform, width, height, opacity" }}
+        style={{
+          left: 0,
+          top: -20,
+          transformOrigin: "center center",
+          willChange: "transform, width, height, opacity",
+        }}
       />
       <div
         ref={greenRef}
         className="glass-panel absolute rounded-full bg-gradient-to-r from-[#54BA60]/70 to-[#54BA60]/50"
-        style={{ left: 0, top: 0, transformOrigin: "center center", willChange: "transform, width, height, opacity" }}
+        style={{
+          left: 10,
+          top: -10,
+          transformOrigin: "center center",
+          willChange: "transform, width, height, opacity",
+        }}
       />
     </div>
   );

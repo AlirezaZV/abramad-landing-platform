@@ -38,6 +38,14 @@ export default function LogoAnimation({ onReady }) {
   const fBlue = useRef(null),
     fAzure = useRef(null),
     fGreen = useRef(null);
+  // Hero-loop only: faded full-path "ghost" and soft "smoke" trail that
+  // sits behind the bright bubble (which reuses the existing s* stroke).
+  const gBlue = useRef(null),
+    gAzure = useRef(null),
+    gGreen = useRef(null);
+  const tBlue = useRef(null),
+    tAzure = useRef(null),
+    tGreen = useRef(null);
 
   // Keep the latest onReady in a ref so the entrance effect can call it
   // without listing onReady as a dep — otherwise every parent re-render
@@ -53,29 +61,52 @@ export default function LogoAnimation({ onReady }) {
       const lenA = sAzure.current.getTotalLength();
       const lenG = sGreen.current.getTotalLength();
 
-      // Hero "pose" — the same logo from loading, just much bigger and
-      // anchored so its CENTER lands at the top-left corner of the viewport
-      // (i.e. 50% of the logo exits past the top edge and 50% past the left
-      // edge). Computed from current layout so it stays exact at any size.
+      // Hero + icon poses are computed from the stage's current center so
+      // the math stays exact at any size. Targets differ on mobile vs
+      // desktop: desktop bleeds the giant logo off the top-left edge for
+      // visual drama; mobile shows it fully, centered horizontally near
+      // the top, at a scale that fits the viewport.
       const r = stageRef.current.getBoundingClientRect();
-      const centerX = r.left + r.width / 2 - 300;
-      const centerY = r.top + r.height / 2;
-      const HERO_SCALE = 5.5;
-      const heroPose = { x: -centerX, y: -centerY, scale: HERO_SCALE };
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const vw = window.innerWidth;
+      const isMobile = vw < 768;
 
-      // Header-icon "pose" — same logo, shrunk to ~60px and tucked into the
-      // top-left corner of the viewport (center at roughly 40,40). Used when
-      // the user scrolls past hero; reverses back to heroPose on return.
-      const ICON_SCALE = 0.13;
+      const HERO_SCALE = isMobile ? 4.3 : 5.5;
+      const heroTargetX = isMobile ? vw / 2 : 300;
+      const heroTargetY = isMobile ? 0 : 0;
+      const heroPose = {
+        x: heroTargetX - cx,
+        y: heroTargetY - cy,
+        scale: HERO_SCALE,
+      };
+
+      // Header-icon "pose" — same logo, shrunk to a ~40px mark in the
+      // top-left corner. Mobile uses a larger relative scale because the
+      // stage starts smaller, so 0.13 would render an unreadably tiny icon.
+      const ICON_SCALE = isMobile ? 0.3 : 0.13;
+      const iconTargetX = isMobile ? 36 : 400;
+      const iconTargetY = isMobile ? 32 : 40;
       const iconPose = {
-        x: -(r.left + r.width / 2 - 400),
-        y: -(r.top + r.height / 2 - 40),
+        x: iconTargetX - cx,
+        y: iconTargetY - cy,
         scale: ICON_SCALE,
       };
 
       // ---------- INITIAL ----------
       gsap.set(stageRef.current, { opacity: 0, scale: 0.9 });
       gsap.set([fBlue.current, fAzure.current, fGreen.current], { opacity: 0 });
+      gsap.set(
+        [
+          gBlue.current,
+          gAzure.current,
+          gGreen.current,
+          tBlue.current,
+          tAzure.current,
+          tGreen.current,
+        ],
+        { opacity: 0 },
+      );
       gsap.set(sBlue.current, {
         strokeDasharray: lenB,
         strokeDashoffset: lenB,
@@ -155,19 +186,25 @@ export default function LogoAnimation({ onReady }) {
               // so unmount cleanup still works.
               ctx.add(() => {
                 // At hero scale we swap the solid logo for a stroke-only
-                // version with a comet of light traveling each path, and
-                // reveal the soft halo behind it. Scrolling toward the icon
-                // pose crossfades back to the solid fills + hides the halo.
-                const SHINE_LEN = 28;
-                const shines = [
-                  { el: sBlue.current, len: lenB },
-                  { el: sAzure.current, len: lenA },
-                  { el: sGreen.current, len: lenG },
+                // version: each path shows a faint full-length "ghost" with
+                // a small bright bubble that drags a soft smoke tail behind
+                // it. The tail's leading edge is offset to align with the
+                // head so it visually trails, not leads.
+                const HEAD_DASH = 1;
+                const TAIL_DASH = 70;
+                const lanes = [
+                  { head: sBlue.current, tail: tBlue.current, len: lenB },
+                  { head: sAzure.current, tail: tAzure.current, len: lenA },
+                  { head: sGreen.current, tail: tGreen.current, len: lenG },
                 ];
-                shines.forEach(({ el, len }) => {
-                  gsap.set(el, {
-                    strokeDasharray: `${SHINE_LEN} ${len - SHINE_LEN}`,
+                lanes.forEach(({ head, tail, len }) => {
+                  gsap.set(head, {
+                    strokeDasharray: `${HEAD_DASH} ${len - HEAD_DASH}`,
                     strokeDashoffset: 0,
+                  });
+                  gsap.set(tail, {
+                    strokeDasharray: `${TAIL_DASH} ${len - TAIL_DASH}`,
+                    strokeDashoffset: TAIL_DASH - HEAD_DASH,
                   });
                 });
 
@@ -181,21 +218,41 @@ export default function LogoAnimation({ onReady }) {
                   duration: 0.5,
                   ease: "power1.out",
                 });
+                gsap.to([tBlue.current, tAzure.current, tGreen.current], {
+                  opacity: 0.45,
+                  duration: 0.7,
+                  ease: "power1.out",
+                });
+                gsap.to([gBlue.current, gAzure.current, gGreen.current], {
+                  opacity: 0.18,
+                  duration: 0.7,
+                  ease: "power1.out",
+                });
                 gsap.to(shadowRef.current, {
                   opacity: 1,
                   duration: 0.7,
                   ease: "power2.out",
                 });
 
-                // Infinite comet loop — each path gets its own phase so they
-                // feel independent rather than marching in lockstep.
-                shines.forEach(({ el, len }, i) => {
-                  gsap.to(el, {
+                // Infinite loop: bubble + its trailing smoke move in lockstep
+                // around each path. Phase delay per color so the three don't
+                // march in unison.
+                lanes.forEach(({ head, tail, len }, i) => {
+                  const duration = 3.5;
+                  const delay = i * 0.45;
+                  gsap.to(head, {
                     strokeDashoffset: -len,
-                    duration: 3.5,
+                    duration,
                     ease: "none",
                     repeat: -1,
-                    delay: i * 0.45,
+                    delay,
+                  });
+                  gsap.to(tail, {
+                    strokeDashoffset: TAIL_DASH - HEAD_DASH - len,
+                    duration,
+                    ease: "none",
+                    repeat: -1,
+                    delay,
                   });
                 });
 
@@ -228,6 +285,16 @@ export default function LogoAnimation({ onReady }) {
                   )
                   .to(
                     [sBlue.current, sAzure.current, sGreen.current],
+                    { opacity: 0, ease: "none" },
+                    0,
+                  )
+                  .to(
+                    [tBlue.current, tAzure.current, tGreen.current],
+                    { opacity: 0, ease: "none" },
+                    0,
+                  )
+                  .to(
+                    [gBlue.current, gAzure.current, gGreen.current],
                     { opacity: 0, ease: "none" },
                     0,
                   )
@@ -285,12 +352,27 @@ export default function LogoAnimation({ onReady }) {
                 <stop offset="0%" stopColor="#264A9F" />
                 <stop offset="100%" stopColor="#3b6cd1" />
               </linearGradient>
-              <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+              <filter
+                id="glow-blue"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
                 <feGaussianBlur stdDeviation="4" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
+              </filter>
+              <filter
+                id="smoke-blue"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
+                <feGaussianBlur stdDeviation="6" />
               </filter>
             </defs>
             <path
@@ -298,6 +380,24 @@ export default function LogoAnimation({ onReady }) {
               d={PATHS.blue}
               fill="url(#lg-blue)"
               className="glass-panel"
+            />
+            <path
+              ref={gBlue}
+              d={PATHS.blue}
+              fill="#7aa6e8"
+              stroke="#7aa6e8"
+              strokeWidth="1.5"
+              opacity="0"
+            />
+            <path
+              ref={tBlue}
+              d={PATHS.blue}
+              fill="none"
+              stroke="#a8c8f3"
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#smoke-blue)"
+              opacity="0"
             />
             <path
               ref={sBlue}
@@ -324,15 +424,48 @@ export default function LogoAnimation({ onReady }) {
                 <stop offset="0%" stopColor="#5a8bd8" />
                 <stop offset="100%" stopColor="#4272B8" />
               </linearGradient>
-              <filter id="glow-azure" x="-50%" y="-50%" width="200%" height="200%">
+              <filter
+                id="glow-azure"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
                 <feGaussianBlur stdDeviation="4" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
+              <filter
+                id="smoke-azure"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
+                <feGaussianBlur stdDeviation="6" />
+              </filter>
             </defs>
             <path ref={fAzure} d={PATHS.azure} fill="url(#lg-azure)" />
+            <path
+              ref={gAzure}
+              d={PATHS.azure}
+              fill="#8fb4ee"
+              stroke="#8fb4ee"
+              strokeWidth="1.5"
+              opacity="0"
+            />
+            <path
+              ref={tAzure}
+              d={PATHS.azure}
+              fill="none"
+              stroke="#b8d2f5"
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#smoke-azure)"
+              opacity="0"
+            />
             <path
               ref={sAzure}
               d={PATHS.azure}
@@ -358,15 +491,48 @@ export default function LogoAnimation({ onReady }) {
                 <stop offset="0%" stopColor="#54BA60" />
                 <stop offset="100%" stopColor="#7cd58a" />
               </linearGradient>
-              <filter id="glow-green" x="-50%" y="-50%" width="200%" height="200%">
+              <filter
+                id="glow-green"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
                 <feGaussianBlur stdDeviation="4" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
+              <filter
+                id="smoke-green"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
+                <feGaussianBlur stdDeviation="6" />
+              </filter>
             </defs>
             <path ref={fGreen} d={PATHS.green} fill="url(#lg-green)" />
+            <path
+              ref={gGreen}
+              d={PATHS.green}
+              fill="#8ee09a"
+              stroke="#8ee09a"
+              strokeWidth="1.5"
+              opacity="0"
+            />
+            <path
+              ref={tGreen}
+              d={PATHS.green}
+              fill="none"
+              stroke="#b6ecbf"
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#smoke-green)"
+              opacity="0"
+            />
             <path
               ref={sGreen}
               d={PATHS.green}

@@ -19,6 +19,10 @@ export default function Hero() {
         <div className="hero-copy">
           <div className="flex items-center gap-4 mb-6">
             {/* glass abramad logo */}
+            <div
+              data-pill-anchor="hero-mark"
+              className="w-[133px] h-[100px] relative shrink-0"
+            />
             {/* <div className="w-[133px] h-[100px] relative shrink-0">
               <div className="glass-panel w-[45px] h-[101px] absolute -right-[25px] bottom-[6px] rotate-45 origin-top-left bg-gradient-to-r from-[#264A9F]/50 to-[#264A9F]/80  rounded-full" />
               <div className="glass-panel w-[45px] h-[123px] absolute left-[48px] bottom-3 bg-gradient-to-r from-[#4272B8]/60 to-[#4272B8]/80  rounded-full" />

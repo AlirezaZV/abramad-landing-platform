@@ -350,7 +350,7 @@ function VideoPlayerBox() {
       {/* Ambient glow behind the player */}
       <div
         aria-hidden
-        className="absolute -inset-10 -z-10 rounded-[40px] blur-3xl opacity-60"
+        className="absolute -inset-4 sm:-inset-10 -z-10 rounded-[40px] blur-3xl opacity-60"
         style={{
           background:
             "radial-gradient(60% 60% at 50% 40%, rgba(66,114,184,0.45), transparent 70%), radial-gradient(40% 40% at 80% 80%, rgba(84,186,96,0.30), transparent 70%)",
@@ -421,10 +421,10 @@ function VideoPlayerBox() {
 /* ------------------------------------------------------------------ */
 function FeatureStrip() {
   return (
-    <div className="mt-10">
+    <div className="mt-8 sm:mt-10">
       <div
         data-pill-anchor="features-strip"
-        className="glass-panel rounded-2xl px-2 sm:px-4 py-4"
+        className="glass-panel rounded-2xl px-1.5 sm:px-4 py-3 sm:py-4"
       >
         <ul className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-1 sm:gap-2 items-stretch">
           {FEATURES.map((f) => (
@@ -442,18 +442,20 @@ function FeatureItem({ feature }) {
     <li className="feature-item group relative">
       <button
         type="button"
-        className="feature-btn w-full h-full flex flex-col items-center gap-2 px-3 py-3 rounded-xl transition-colors duration-300 hover:bg-white/[0.04]"
+        className="feature-btn w-full h-full flex flex-col items-center gap-1.5 sm:gap-2 px-1.5 py-2.5 sm:px-3 sm:py-3 rounded-xl transition-colors duration-300 hover:bg-white/[0.04]"
       >
-        <span className="feature-icon flex items-center justify-center w-12 h-12 rounded-2xl text-[#a8c7ff] transition-all duration-300">
+        <span className="feature-icon flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-2xl text-[#a8c7ff] transition-all duration-300">
           <I />
         </span>
-        <span className="text-[11px] sm:text-xs text-white/70 leading-snug text-center whitespace-nowrap">
+        <span className="text-[10px] sm:text-xs text-white/70 leading-snug text-center break-words">
           {label}
         </span>
       </button>
 
-      {/* Tooltip with mini-dashboard preview */}
-      <div className="feature-tooltip pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-[260px] opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+      {/* Tooltip with mini-dashboard preview. Hidden below md because
+          hover-only triggers don't fire on touch and the 260px panel
+          would overflow narrow viewports. */}
+      <div className="feature-tooltip pointer-events-none hidden md:block absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-[260px] opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
         <div className="glass-strong rounded-xl p-2 shadow-2xl">
           <div className="h-[150px] rounded-lg overflow-hidden">
             <Preview />
@@ -477,18 +479,18 @@ function FeatureItem({ feature }) {
 /* ------------------------------------------------------------------ */
 export default function Content() {
   return (
-    <section id="content" className="relative">
+    <section id="content" className="relative overflow-hidden">
       <div className="absolute inset-0 grid-overlay pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-24">
-        <div className="text-center mb-10">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-3">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-20 lg:py-24">
+        <div className="text-center mb-8 sm:mb-10">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/40 mb-3">
             یک نگاه به پلتفرم
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
             <span className="shimmer-text">پلتفرم ابرآمد در عمل</span>
           </h2>
-          <p className="mt-4 text-white/55 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-3 sm:mt-4 text-sm sm:text-base text-white/55 max-w-2xl mx-auto leading-relaxed">
             ویدیوی کوتاه زیر را تماشا کنید و با امکانات کلیدی داشبورد
             یکپارچه آشنا شوید.
           </p>
