@@ -1,0 +1,235 @@
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: bold;
+  src: url("./IIRANSansXFaNum-Bold.eot");
+  src:
+    url("./IRANSansXFaNum-Bold.eot?#iefix") format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansXFaNum-Bold.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansXFaNum-Bold.woff")
+      format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("./IRANSansXFaNum-Bold.ttf")
+      format("truetype");
+}
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: 500;
+  src: url("./IRANSansXFaNum-Medium.eot");
+  src:
+    url("./IRANSansXFaNum-Medium.eot?#iefix") format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansXFaNum-Medium.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansXFaNum-Medium.woff")
+      format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("./IRANSansXFaNum-Medium.ttf")
+      format("truetype");
+}
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: 300;
+  src: url("./IRANSansXFaNum-Light.eot");
+  src:
+    url("./IRANSansXFaNum-Light.eot?#iefix") format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansXFaNum-Light.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansXFaNum-Light.woff")
+      format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("./IRANSansXFaNum-Light.ttf")
+      format("truetype");
+}
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: 200;
+  src: url("./IRANSansXFaNum-UltraLight.eot");
+  src:
+    url("./IRANSansXFaNum-UltraLight.eot?#iefix")
+      format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansXFaNum-UltraLight.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansXFaNum-UltraLight.woff")
+      format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+      url("./IRANSansXFaNum-UltraLight.ttf") format("truetype");
+}
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: normal;
+  src: url("./IRANSansXFaNum-Regular.eot");
+  src:
+    url("./IRANSansXFaNum-Regular.eot?#iefix") format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansXFaNum-Regular.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansXFaNum-Regular.woff")
+      format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+      url("./IRANSansXFaNum-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: IRANSans;
+  font-style: normal;
+  font-weight: 100;
+  src: url("./IRANSansWeb.eot");
+  src:
+    url("./IRANSansWeb.eot?#iefix") format("embedded-opentype"),
+    /* IE6-8 */ url("./IRANSansWeb.woff2") format("woff2"),
+    /* Chrome36+, Opera24+*/ url("./IRANSansWeb.woff") format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("./IRANSansWeb.ttf")
+      format("truetype");
+}
+
+@font-face {
+  font-family: SGKara;
+  src: url("./SGKara-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: SGKara;
+  src: url("./SGKara-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: SGKara;
+  src: url("./SGKara-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Ravi */
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 100;
+	src: url('./RaviFaNum-thin.woff') format('woff'),   
+	url('./RaviFaNum-thin.woff2') format('woff2');		
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 300;
+	src: url('./RaviFaNum-Light.woff') format('woff'),   
+	url('./RaviFaNum-Light.woff2') format('woff2');	
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: normal;
+	src: url('./RaviFaNum-Regular.woff') format('woff'),   
+	url('./RaviFaNum-Regular.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 500;
+	src: url('./RaviFaNum-Medium.woff') format('woff'),   
+	url('./RaviFaNum-Medium.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 600;
+	src: url('./RaviFaNum-SemiBold.woff') format('woff'),   
+	url('./RaviFaNum-SemiBold.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: bold;
+	src: url('./RaviFaNum-Bold.woff') format('woff'),   
+	url('./RaviFaNum-Bold.woff2') format('woff2'); 
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 900;
+	src: url('./RaviFaNum-Black.woff') format('woff'),   
+	url('./RaviFaNum-Black.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: RaviFaNum;
+	font-style: normal;
+	font-weight: 950;
+	src: url('woff/RaviFaNum-ExtraBlack.woff') format('woff'),   
+	url('woff2/RaviFaNum-ExtraBlack.woff2') format('woff2');		 
+}
+
+
+
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 100;
+	src: url('./Ravi-thin.woff') format('woff'),   
+	url('./Ravi-thin.woff2') format('woff2');		
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 300;
+	src: url('./Ravi-Light.woff') format('woff'),   
+	url('./Ravi-Light.woff2') format('woff2');	
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: normal;
+	src: url('./Ravi-Regular.woff') format('woff'),   
+	url('./Ravi-Regular.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 500;
+	src: url('./Ravi-Medium.woff') format('woff'),   
+	url('./Ravi-Medium.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 600;
+	src: url('./Ravi-SemiBold.woff') format('woff'),   
+	url('./Ravi-SemiBold.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: bold;
+	src: url('./Ravi-Bold.woff') format('woff'),   
+	url('./Ravi-Bold.woff2') format('woff2'); 
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 900;
+	src: url('./Ravi-Black.woff') format('woff'),   
+	url('./Ravi-Black.woff2') format('woff2');		 
+}
+
+@font-face {
+	font-family: Ravi;
+	font-style: normal;
+	font-weight: 950;
+	src: url('woff/Ravi-ExtraBlack.woff') format('woff'),   
+	url('woff2/Ravi-ExtraBlack.woff2') format('woff2');		 
+}

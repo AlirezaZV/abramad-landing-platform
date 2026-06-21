@@ -1,0 +1,397 @@
+/* @import must precede @tailwind / any other rules per CSS spec, otherwise
+   Vite drops it silently and the font-face declarations never load. */
+@import "./fonts.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-blue: #264a9f;
+  --brand-azure: #4272b8;
+  --brand-green: #54ba60;
+  --brand-ink: #070b1a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: #070b1a;
+  color: #e6ecff;
+  font-family: "SGKara", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Background ambient grid */
+.bg-grid {
+  background-image:
+    radial-gradient(
+      1200px 600px at 50% -10%,
+      rgba(66, 114, 184, 0.25),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 100% 20%,
+      rgba(84, 186, 96, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 0% 60%,
+      rgba(38, 74, 159, 0.2),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #070b1a 0%, #0b1430 100%);
+}
+
+/* Subtle grid overlay */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 80%);
+}
+
+/* Glassmorphism card */
+.glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.glass-strong {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.03)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(22px);
+}
+
+/* Shimmering text */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #fff 0%,
+    #88aee7 25%,
+    #98f1a3 50%,
+    #86b1f1 75%,
+    #fff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Hide scrollbar visually but keep functionality */
+::-webkit-scrollbar {
+  width: 1px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #264a9f, #54ba60);
+  border-radius: 10px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(84, 186, 96, 0.4);
+  color: white;
+}
+
+/* Button base */
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  border-radius: 100px;
+  font-weight: 600;
+  color: white;
+  box-shadow:
+    0 10px 30px rgba(38, 74, 159, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    filter 0.3s ease;
+  overflow: hidden;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgba(84, 186, 96, 0.45);
+  filter: saturate(1.15);
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.8s ease;
+}
+.btn-primary:hover::after {
+  transform: translateX(100%);
+}
+
+/* Section padding */
+.section {
+  padding-top: 120px;
+  padding-bottom: 120px;
+  position: relative;
+}
+
+/* Logo path stroke draw */
+.path-trace {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Feature strip — icon hover scales + glows, tooltip lifts in.       */
+/* ------------------------------------------------------------------ */
+.feature-item .feature-icon {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.01)
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.feature-item:hover .feature-icon,
+.feature-item:focus-within .feature-icon {
+  transform: scale(1.18) translateY(-2px);
+  color: #ffffff;
+  background: linear-gradient(
+    180deg,
+    rgba(84, 186, 96, 0.18),
+    rgba(66, 114, 184, 0.18)
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 18px 2px rgba(84, 186, 96, 0.45),
+    0 0 36px 6px rgba(66, 114, 184, 0.35);
+  filter: drop-shadow(0 0 6px rgba(84, 186, 96, 0.55));
+}
+
+.feature-item .feature-tooltip {
+  z-index: 30;
+}
+
+/* Inline brand-mark pills inside the hero anchor are hidden — the
+   <HeroPills /> overlay renders the same mark in a fixed layer that
+   morphs on scroll. The container is kept so it can serve as an anchor. */
+[data-pill-anchor="hero-mark"] > div {
+  opacity: 0;
+}
+
+:root {
+  /* Glass effect variables - Dark theme default */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+
+  --c-content: #e1e1e1;
+  --c-action: #03d5ff;
+
+  --c-bg: #1b1b1d;
+
+  --glass-reflex-dark: 2;
+  --glass-reflex-light: 0.3;
+
+  --saturation: 150%;
+}
+
+.light {
+  /* Glass effect variables - Light theme */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+
+  --c-content: #224;
+  --c-action: #0052f5;
+
+  --c-bg: #e8e8e9;
+
+  --glass-reflex-dark: 1;
+  --glass-reflex-light: 1;
+
+  --saturation: 150%;
+}
+
+.dark {
+  /* Glass effect variables - Keep for backwards compatibility */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+
+  --c-content: #e1e1e1;
+  --c-action: #03d5ff;
+
+  --c-bg: #1b1b1d;
+
+  --glass-reflex-dark: 2;
+  --glass-reflex-light: 0.3;
+
+  --saturation: 150%;
+}
+
+/* Base Glass Panel - Container Style */
+.glass-panel {
+  background-color: rgba(
+    187,
+    187,
+    188,
+    0.2
+  ); /* Increased opacity for fallback */
+  background-color: color-mix(in srgb, var(--c-glass) 12%, transparent);
+  -webkit-backdrop-filter: blur(8px) saturate(var(--saturation));
+  backdrop-filter: blur(8px) saturate(var(--saturation));
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 10%),
+        transparent
+      ),
+    inset 1.8px 3px 0px -2px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -2px -2px 0px -2px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 80%),
+        transparent
+      ),
+    inset -3px -8px 1px -6px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 60%),
+        transparent
+      ),
+    inset -0.3px -1px 4px 0px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 12%),
+        transparent
+      ),
+    inset -1.5px 2.5px 0px -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0px 3px 4px -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 2px -6.5px 1px -4px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0px 1px 5px 0px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0px 6px 16px 0px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
+        transparent
+      );
+  transition:
+    background-color 400ms cubic-bezier(1, 0, 0.4, 1),
+    box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+}
+
+/* Active Bubble Style - Matches the switcher::after pseudo-element */
+.glass-bubble {
+  background-color: color-mix(in srgb, var(--c-glass) 36%, transparent);
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 10%),
+        transparent
+      ),
+    inset 2px 1px 0px -1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 90%),
+        transparent
+      ),
+    inset -1.5px -1px 0px -1px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 80%),
+        transparent
+      ),
+    inset -2px -6px 1px -5px
+      color-mix(
+        in srgb,
+        var(--c-light) calc(var(--glass-reflex-light) * 60%),
+        transparent
+      ),
+    inset -1px 2px 3px -1px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 20%),
+        transparent
+      ),
+    inset 0px -4px 1px -2px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 10%),
+        transparent
+      ),
+    0px 3px 6px 0px
+      color-mix(
+        in srgb,
+        var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
+        transparent
+      );
+}
