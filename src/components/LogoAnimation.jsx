@@ -46,6 +46,10 @@ export default function LogoAnimation({ onReady }) {
   const tBlue = useRef(null),
     tAzure = useRef(null),
     tGreen = useRef(null);
+  // Outer wide halo layer — very blurry, breathes in/out like the glow-button aura
+  const hBlue = useRef(null),
+    hAzure = useRef(null),
+    hGreen = useRef(null);
 
   // Keep the latest onReady in a ref so the entrance effect can call it
   // without listing onReady as a dep — otherwise every parent re-render
@@ -104,6 +108,9 @@ export default function LogoAnimation({ onReady }) {
           tBlue.current,
           tAzure.current,
           tGreen.current,
+          hBlue.current,
+          hAzure.current,
+          hGreen.current,
         ],
         { opacity: 0 },
       );
@@ -185,28 +192,61 @@ export default function LogoAnimation({ onReady }) {
               // ctx.add() keeps these inner tweens tracked by the same gsap.context,
               // so unmount cleanup still works.
               ctx.add(() => {
-                // At hero scale we swap the solid logo for a stroke-only
-                // version: each path shows a faint full-length "ghost" with
-                // a small bright bubble that drags a soft smoke tail behind
-                // it. The tail's leading edge is offset to align with the
-                // head so it visually trails, not leads.
-                const HEAD_DASH = 1;
-                const TAIL_DASH = 70;
+                // Three-layer comet per path, inspired by the glow-button's
+                // multi-layer shine: halo (wide aura) → smoke tail → bright core.
+                // Each layer orbits the path in lockstep; the halo breathes
+                // with a sine-wave pulse and the core flares its width.
+                const HEAD_DASH = 3;
+                const TAIL_DASH = 120;
+                const HALO_DASH = 220;
                 const lanes = [
-                  { head: sBlue.current, tail: tBlue.current, len: lenB },
-                  { head: sAzure.current, tail: tAzure.current, len: lenA },
-                  { head: sGreen.current, tail: tGreen.current, len: lenG },
+                  {
+                    head: sBlue.current,
+                    tail: tBlue.current,
+                    halo: hBlue.current,
+                    len: lenB,
+                    headColor: "#c4dcff",
+                    tailColor: "#5a8bd8",
+                  },
+                  {
+                    head: sAzure.current,
+                    tail: tAzure.current,
+                    halo: hAzure.current,
+                    len: lenA,
+                    headColor: "#e2eeff",
+                    tailColor: "#4272B8",
+                  },
+                  {
+                    head: sGreen.current,
+                    tail: tGreen.current,
+                    halo: hGreen.current,
+                    len: lenG,
+                    headColor: "#c6f5cc",
+                    tailColor: "#54BA60",
+                  },
                 ];
-                lanes.forEach(({ head, tail, len }) => {
-                  gsap.set(head, {
-                    strokeDasharray: `${HEAD_DASH} ${len - HEAD_DASH}`,
-                    strokeDashoffset: 0,
-                  });
-                  gsap.set(tail, {
-                    strokeDasharray: `${TAIL_DASH} ${len - TAIL_DASH}`,
-                    strokeDashoffset: TAIL_DASH - HEAD_DASH,
-                  });
-                });
+                lanes.forEach(
+                  ({ head, tail, halo, len, headColor, tailColor }) => {
+                    gsap.set(head, {
+                      strokeDasharray: `${HEAD_DASH} ${len - HEAD_DASH}`,
+                      strokeDashoffset: 0,
+                      stroke: headColor,
+                      strokeWidth: "6",
+                    });
+                    gsap.set(tail, {
+                      strokeDasharray: `${TAIL_DASH} ${len - TAIL_DASH}`,
+                      strokeDashoffset: TAIL_DASH - HEAD_DASH,
+                      stroke: tailColor,
+                      strokeWidth: "8",
+                    });
+                    gsap.set(halo, {
+                      strokeDasharray: `${HALO_DASH} ${len - HALO_DASH}`,
+                      strokeDashoffset: HALO_DASH - HEAD_DASH,
+                      stroke: tailColor,
+                      strokeWidth: "20",
+                    });
+                  },
+                );
 
                 gsap.to([fBlue.current, fAzure.current, fGreen.current], {
                   opacity: 0,
@@ -219,12 +259,17 @@ export default function LogoAnimation({ onReady }) {
                   ease: "power1.out",
                 });
                 gsap.to([tBlue.current, tAzure.current, tGreen.current], {
-                  opacity: 0.45,
+                  opacity: 0.65,
                   duration: 0.7,
                   ease: "power1.out",
                 });
+                gsap.to([hBlue.current, hAzure.current, hGreen.current], {
+                  opacity: 0.42,
+                  duration: 1.0,
+                  ease: "power1.out",
+                });
                 gsap.to([gBlue.current, gAzure.current, gGreen.current], {
-                  opacity: 0.18,
+                  opacity: 0.13,
                   duration: 0.7,
                   ease: "power1.out",
                 });
@@ -234,11 +279,12 @@ export default function LogoAnimation({ onReady }) {
                   ease: "power2.out",
                 });
 
-                // Infinite loop: bubble + its trailing smoke move in lockstep
-                // around each path. Phase delay per color so the three don't
-                // march in unison.
-                lanes.forEach(({ head, tail, len }, i) => {
-                  const duration = 3.5;
+                // All three layers orbit each path in lockstep. Staggered
+                // phase delays keep the colors from marching in unison.
+                // The halo breathes (opacity yoyo) for an organic pulse;
+                // the core flares its strokeWidth like a glowing flare.
+                lanes.forEach(({ head, tail, halo, len }, i) => {
+                  const duration = 3.5 + i * 0.25;
                   const delay = i * 0.45;
                   gsap.to(head, {
                     strokeDashoffset: -len,
@@ -253,6 +299,31 @@ export default function LogoAnimation({ onReady }) {
                     ease: "none",
                     repeat: -1,
                     delay,
+                  });
+                  gsap.to(halo, {
+                    strokeDashoffset: HALO_DASH - HEAD_DASH - len,
+                    duration,
+                    ease: "none",
+                    repeat: -1,
+                    delay,
+                  });
+                  // Outer halo breathes — mimics the glow-button's radial aura bloom
+                  gsap.to(halo, {
+                    opacity: 0.12,
+                    duration: 1.3 + i * 0.3,
+                    ease: "sine.inOut",
+                    yoyo: true,
+                    repeat: -1,
+                    delay: 1.1 + i * 0.5,
+                  });
+                  // Core dot flares its width — like the button's glowing shine burst
+                  gsap.to(head, {
+                    strokeWidth: "3",
+                    duration: 0.85 + i * 0.2,
+                    ease: "sine.inOut",
+                    yoyo: true,
+                    repeat: -1,
+                    delay: 0.6 + i * 0.35,
                   });
                 });
 
@@ -290,6 +361,11 @@ export default function LogoAnimation({ onReady }) {
                   )
                   .to(
                     [tBlue.current, tAzure.current, tGreen.current],
+                    { opacity: 0, ease: "none" },
+                    0,
+                  )
+                  .to(
+                    [hBlue.current, hAzure.current, hGreen.current],
                     { opacity: 0, ease: "none" },
                     0,
                   )
@@ -352,27 +428,43 @@ export default function LogoAnimation({ onReady }) {
                 <stop offset="0%" stopColor="#264A9F" />
                 <stop offset="100%" stopColor="#3b6cd1" />
               </linearGradient>
+              {/* Double-layer glow: tight inner bloom + wide outer corona */}
               <filter
                 id="glow-blue"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-150%"
+                y="-150%"
+                width="400%"
+                height="400%"
               >
-                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feGaussianBlur stdDeviation="3" result="innerBlur" />
+                <feGaussianBlur
+                  stdDeviation="11"
+                  result="outerBlur"
+                  in="SourceGraphic"
+                />
                 <feMerge>
-                  <feMergeNode in="blur" />
+                  <feMergeNode in="outerBlur" />
+                  <feMergeNode in="innerBlur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
               <filter
                 id="smoke-blue"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-100%"
+                y="-100%"
+                width="300%"
+                height="300%"
               >
-                <feGaussianBlur stdDeviation="6" />
+                <feGaussianBlur stdDeviation="15" />
+              </filter>
+              <filter
+                id="halo-blue"
+                x="-250%"
+                y="-250%"
+                width="600%"
+                height="600%"
+              >
+                <feGaussianBlur stdDeviation="20" />
               </filter>
             </defs>
             <path
@@ -387,6 +479,17 @@ export default function LogoAnimation({ onReady }) {
               fill="#7aa6e8"
               stroke="#7aa6e8"
               strokeWidth="1.5"
+              opacity="0"
+            />
+            {/* Outer halo — widest, most diffuse layer */}
+            <path
+              ref={hBlue}
+              d={PATHS.blue}
+              fill="none"
+              stroke="#5a8bd8"
+              strokeWidth="20"
+              strokeLinecap="round"
+              filter="url(#halo-blue)"
               opacity="0"
             />
             <path
@@ -426,25 +529,40 @@ export default function LogoAnimation({ onReady }) {
               </linearGradient>
               <filter
                 id="glow-azure"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-150%"
+                y="-150%"
+                width="400%"
+                height="400%"
               >
-                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feGaussianBlur stdDeviation="3" result="innerBlur" />
+                <feGaussianBlur
+                  stdDeviation="11"
+                  result="outerBlur"
+                  in="SourceGraphic"
+                />
                 <feMerge>
-                  <feMergeNode in="blur" />
+                  <feMergeNode in="outerBlur" />
+                  <feMergeNode in="innerBlur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
               <filter
                 id="smoke-azure"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-100%"
+                y="-100%"
+                width="300%"
+                height="300%"
               >
-                <feGaussianBlur stdDeviation="6" />
+                <feGaussianBlur stdDeviation="9" />
+              </filter>
+              <filter
+                id="halo-azure"
+                x="-250%"
+                y="-250%"
+                width="600%"
+                height="600%"
+              >
+                <feGaussianBlur stdDeviation="20" />
               </filter>
             </defs>
             <path ref={fAzure} d={PATHS.azure} fill="url(#lg-azure)" />
@@ -454,6 +572,16 @@ export default function LogoAnimation({ onReady }) {
               fill="#8fb4ee"
               stroke="#8fb4ee"
               strokeWidth="1.5"
+              opacity="0"
+            />
+            <path
+              ref={hAzure}
+              d={PATHS.azure}
+              fill="none"
+              stroke="#4272B8"
+              strokeWidth="20"
+              strokeLinecap="round"
+              filter="url(#halo-azure)"
               opacity="0"
             />
             <path
@@ -493,25 +621,40 @@ export default function LogoAnimation({ onReady }) {
               </linearGradient>
               <filter
                 id="glow-green"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-150%"
+                y="-150%"
+                width="400%"
+                height="400%"
               >
-                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feGaussianBlur stdDeviation="3" result="innerBlur" />
+                <feGaussianBlur
+                  stdDeviation="11"
+                  result="outerBlur"
+                  in="SourceGraphic"
+                />
                 <feMerge>
-                  <feMergeNode in="blur" />
+                  <feMergeNode in="outerBlur" />
+                  <feMergeNode in="innerBlur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
               <filter
                 id="smoke-green"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                x="-100%"
+                y="-100%"
+                width="300%"
+                height="300%"
               >
-                <feGaussianBlur stdDeviation="6" />
+                <feGaussianBlur stdDeviation="9" />
+              </filter>
+              <filter
+                id="halo-green"
+                x="-250%"
+                y="-250%"
+                width="600%"
+                height="600%"
+              >
+                <feGaussianBlur stdDeviation="20" />
               </filter>
             </defs>
             <path ref={fGreen} d={PATHS.green} fill="url(#lg-green)" />
@@ -521,6 +664,16 @@ export default function LogoAnimation({ onReady }) {
               fill="#8ee09a"
               stroke="#8ee09a"
               strokeWidth="1.5"
+              opacity="0"
+            />
+            <path
+              ref={hGreen}
+              d={PATHS.green}
+              fill="none"
+              stroke="#54BA60"
+              strokeWidth="20"
+              strokeLinecap="round"
+              filter="url(#halo-green)"
               opacity="0"
             />
             <path
