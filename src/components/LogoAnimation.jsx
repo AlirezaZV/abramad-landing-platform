@@ -5,15 +5,21 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * The ONE logo for the whole page. Fixed in the viewport, morphs through
- * four phases driven by mount + scroll:
+ * The ONE logo for the whole page. Fixed in the viewport, driven by
+ * mount + scroll. Kept deliberately light:
  *
- *   1. LOADING  — three stroke paths wave-draw onto a dark backdrop,
- *                 then the colored fills bloom in.
- *   2. HERO     — solid logo scales up and slides to the right side.
- *   3. CONTENT  — fills swap back to strokes; each path drifts on its
- *                 own sine wave, driven by scroll progress.
- *   4. FOOTER   — paths converge, strokes fade, fills return: rebuilt.
+ *   1. LOADING — three stroke paths wave-draw onto the backdrop while the
+ *                logo is still SMALL (so the glow filter is cheap), then
+ *                the colored fills bloom in.
+ *   2. HERO    — the solid logo scales up and slides to the right. At this
+ *                BIG size it is completely static: just the gradient fills
+ *                (no SVG filters, no looping animation) plus a soft shadow.
+ *   3. SCROLL  — the same solid logo scales/moves down into the header icon.
+ *                Only a GPU transform animates per frame.
+ *
+ * What was removed for performance: the infinite three-layer "comet" orbit
+ * and its animated Gaussian-blur halo/smoke layers, which re-rasterized a
+ * large blurred area every frame at 5.5x hero scale.
  */
 
 const PATHS = {
@@ -29,27 +35,12 @@ export default function LogoAnimation({ onReady }) {
   const stageRef = useRef(null);
   const shadowRef = useRef(null);
 
-  const wBlue = useRef(null),
-    wAzure = useRef(null),
-    wGreen = useRef(null);
   const sBlue = useRef(null),
     sAzure = useRef(null),
     sGreen = useRef(null);
   const fBlue = useRef(null),
     fAzure = useRef(null),
     fGreen = useRef(null);
-  // Hero-loop only: faded full-path "ghost" and soft "smoke" trail that
-  // sits behind the bright bubble (which reuses the existing s* stroke).
-  const gBlue = useRef(null),
-    gAzure = useRef(null),
-    gGreen = useRef(null);
-  const tBlue = useRef(null),
-    tAzure = useRef(null),
-    tGreen = useRef(null);
-  // Outer wide halo layer — very blurry, breathes in/out like the glow-button aura
-  const hBlue = useRef(null),
-    hAzure = useRef(null),
-    hGreen = useRef(null);
 
   // Keep the latest onReady in a ref so the entrance effect can call it
   // without listing onReady as a dep — otherwise every parent re-render
@@ -85,35 +76,34 @@ export default function LogoAnimation({ onReady }) {
         scale: HERO_SCALE,
       };
 
-      // Header-icon "pose" — same logo, shrunk to a ~40px mark in the
-      // top-left corner. Mobile uses a larger relative scale because the
-      // stage starts smaller, so 0.13 would render an unreadably tiny icon.
-      const ICON_SCALE = isMobile ? 0.3 : 0.13;
-      const iconTargetX = isMobile ? 36 : 400;
-      const iconTargetY = isMobile ? 32 : 40;
-      const iconPose = {
-        x: iconTargetX - cx,
-        y: iconTargetY - cy,
-        scale: ICON_SCALE,
+      // Header-icon "pose" is computed later (in onComplete), by measuring
+      // the header's reserved #logo-slot — so the icon lands exactly on the
+      // header at any viewport width instead of using fixed pixel guesses.
+      // The slot only exists once the page is revealed, which has happened
+      // by the time the entrance completes.
+      const measureIconPose = () => {
+        const slot =
+          typeof document !== "undefined" &&
+          document.getElementById("logo-slot");
+        if (slot) {
+          const sr = slot.getBoundingClientRect();
+          return {
+            x: sr.left + sr.width / 2 - cx,
+            y: sr.top + sr.height / 2 - cy,
+            // Shrink the natural stage down to the slot's width.
+            scale: sr.width / r.width,
+          };
+        }
+        // Fallback if the slot isn't in the DOM for some reason.
+        const fScale = isMobile ? 0.3 : 0.16;
+        const fx = isMobile ? 36 : vw - 64;
+        const fy = isMobile ? 32 : 40;
+        return { x: fx - cx, y: fy - cy, scale: fScale };
       };
 
       // ---------- INITIAL ----------
       gsap.set(stageRef.current, { opacity: 0, scale: 0.9 });
       gsap.set([fBlue.current, fAzure.current, fGreen.current], { opacity: 0 });
-      gsap.set(
-        [
-          gBlue.current,
-          gAzure.current,
-          gGreen.current,
-          tBlue.current,
-          tAzure.current,
-          tGreen.current,
-          hBlue.current,
-          hAzure.current,
-          hGreen.current,
-        ],
-        { opacity: 0 },
-      );
       gsap.set(sBlue.current, {
         strokeDasharray: lenB,
         strokeDashoffset: lenB,
@@ -131,6 +121,9 @@ export default function LogoAnimation({ onReady }) {
       });
 
       // ---------- ENTRANCE: wave draw → fill → slide right ----------
+      // All of this runs while the logo is small, so the glow filter on the
+      // strokes is cheap. By the time it scales up, only the (unfiltered)
+      // fills are visible.
       const enter = gsap.timeline({ delay: 0.25 });
       enter
         .to(stageRef.current, {
@@ -174,11 +167,10 @@ export default function LogoAnimation({ onReady }) {
           },
           "<",
         )
-        // Hold the assembled logo for a beat, then grow + move into the
-        // top-left corner. onStart reveals the page so the same logo flows
-        // continuously into its hero pose — no re-animation.
-        // onComplete arms the scroll-driven hero→icon transition, capturing
-        // the current heroPose as the "from" state.
+        // Hold the assembled logo for a beat, then grow + move to the hero
+        // pose. onStart reveals the page so the same logo flows continuously
+        // into its hero pose. onComplete arms the lightweight scroll-driven
+        // hero→icon scale-down.
         .to(
           stageRef.current,
           {
@@ -189,147 +181,24 @@ export default function LogoAnimation({ onReady }) {
             ease: "power3.inOut",
             onStart: () => onReadyRef.current?.(),
             onComplete: () => {
-              // ctx.add() keeps these inner tweens tracked by the same gsap.context,
+              // ctx.add() keeps these tweens tracked by the same gsap.context,
               // so unmount cleanup still works.
               ctx.add(() => {
-                // Three-layer comet per path, inspired by the glow-button's
-                // multi-layer shine: halo (wide aura) → smoke tail → bright core.
-                // Each layer orbits the path in lockstep; the halo breathes
-                // with a sine-wave pulse and the core flares its width.
-                const HEAD_DASH = 3;
-                const TAIL_DASH = 120;
-                const HALO_DASH = 220;
-                const lanes = [
-                  {
-                    head: sBlue.current,
-                    tail: tBlue.current,
-                    halo: hBlue.current,
-                    len: lenB,
-                    headColor: "#c4dcff",
-                    tailColor: "#5a8bd8",
-                  },
-                  {
-                    head: sAzure.current,
-                    tail: tAzure.current,
-                    halo: hAzure.current,
-                    len: lenA,
-                    headColor: "#e2eeff",
-                    tailColor: "#4272B8",
-                  },
-                  {
-                    head: sGreen.current,
-                    tail: tGreen.current,
-                    halo: hGreen.current,
-                    len: lenG,
-                    headColor: "#c6f5cc",
-                    tailColor: "#54BA60",
-                  },
-                ];
-                lanes.forEach(
-                  ({ head, tail, halo, len, headColor, tailColor }) => {
-                    gsap.set(head, {
-                      strokeDasharray: `${HEAD_DASH} ${len - HEAD_DASH}`,
-                      strokeDashoffset: 0,
-                      stroke: headColor,
-                      strokeWidth: "6",
-                    });
-                    gsap.set(tail, {
-                      strokeDasharray: `${TAIL_DASH} ${len - TAIL_DASH}`,
-                      strokeDashoffset: TAIL_DASH - HEAD_DASH,
-                      stroke: tailColor,
-                      strokeWidth: "8",
-                    });
-                    gsap.set(halo, {
-                      strokeDasharray: `${HALO_DASH} ${len - HALO_DASH}`,
-                      strokeDashoffset: HALO_DASH - HEAD_DASH,
-                      stroke: tailColor,
-                      strokeWidth: "20",
-                    });
-                  },
-                );
-
-                gsap.to([fBlue.current, fAzure.current, fGreen.current], {
-                  opacity: 0,
-                  duration: 0.5,
-                  ease: "power1.out",
-                });
-                gsap.to([sBlue.current, sAzure.current, sGreen.current], {
-                  opacity: 1,
-                  duration: 0.5,
-                  ease: "power1.out",
-                });
-                gsap.to([tBlue.current, tAzure.current, tGreen.current], {
-                  opacity: 0.65,
-                  duration: 0.7,
-                  ease: "power1.out",
-                });
-                gsap.to([hBlue.current, hAzure.current, hGreen.current], {
-                  opacity: 0.42,
-                  duration: 1.0,
-                  ease: "power1.out",
-                });
-                gsap.to([gBlue.current, gAzure.current, gGreen.current], {
-                  opacity: 0.13,
-                  duration: 0.7,
-                  ease: "power1.out",
-                });
+                // BIG state = cheap state. The solid gradient fills are
+                // already visible; just fade in the soft shadow halo. No
+                // looping animation, no SVG filters at hero scale.
                 gsap.to(shadowRef.current, {
                   opacity: 1,
                   duration: 0.7,
                   ease: "power2.out",
                 });
 
-                // All three layers orbit each path in lockstep. Staggered
-                // phase delays keep the colors from marching in unison.
-                // The halo breathes (opacity yoyo) for an organic pulse;
-                // the core flares its strokeWidth like a glowing flare.
-                lanes.forEach(({ head, tail, halo, len }, i) => {
-                  const duration = 3.5 + i * 0.25;
-                  const delay = i * 0.45;
-                  gsap.to(head, {
-                    strokeDashoffset: -len,
-                    duration,
-                    ease: "none",
-                    repeat: -1,
-                    delay,
-                  });
-                  gsap.to(tail, {
-                    strokeDashoffset: TAIL_DASH - HEAD_DASH - len,
-                    duration,
-                    ease: "none",
-                    repeat: -1,
-                    delay,
-                  });
-                  gsap.to(halo, {
-                    strokeDashoffset: HALO_DASH - HEAD_DASH - len,
-                    duration,
-                    ease: "none",
-                    repeat: -1,
-                    delay,
-                  });
-                  // Outer halo breathes — mimics the glow-button's radial aura bloom
-                  gsap.to(halo, {
-                    opacity: 0.12,
-                    duration: 1.3 + i * 0.3,
-                    ease: "sine.inOut",
-                    yoyo: true,
-                    repeat: -1,
-                    delay: 1.1 + i * 0.5,
-                  });
-                  // Core dot flares its width — like the button's glowing shine burst
-                  gsap.to(head, {
-                    strokeWidth: "3",
-                    duration: 0.85 + i * 0.2,
-                    ease: "sine.inOut",
-                    yoyo: true,
-                    repeat: -1,
-                    delay: 0.6 + i * 0.35,
-                  });
-                });
-
-                // Scroll-driven hero → icon: scale down AND crossfade strokes
-                // + halo away while fills return, all bound to the same
-                // ScrollTrigger so they stay in sync with the scale.
+                // Scroll-driven hero → icon: scale/move down only. The fills
+                // stay solid the whole way, so the only per-frame work is a
+                // GPU transform. The target is measured from the header's
+                // #logo-slot now (it's in the DOM by this point), so the icon
+                // lands aligned with the header on every screen size.
+                const iconPose = measureIconPose();
                 const scrollTl = gsap.timeline({
                   scrollTrigger: {
                     trigger: "#hero",
@@ -347,31 +216,6 @@ export default function LogoAnimation({ onReady }) {
                       scale: iconPose.scale,
                       ease: "none",
                     },
-                    0,
-                  )
-                  .to(
-                    [fBlue.current, fAzure.current, fGreen.current],
-                    { opacity: 1, ease: "none" },
-                    0,
-                  )
-                  .to(
-                    [sBlue.current, sAzure.current, sGreen.current],
-                    { opacity: 0, ease: "none" },
-                    0,
-                  )
-                  .to(
-                    [tBlue.current, tAzure.current, tGreen.current],
-                    { opacity: 0, ease: "none" },
-                    0,
-                  )
-                  .to(
-                    [hBlue.current, hAzure.current, hGreen.current],
-                    { opacity: 0, ease: "none" },
-                    0,
-                  )
-                  .to(
-                    [gBlue.current, gAzure.current, gGreen.current],
-                    { opacity: 0, ease: "none" },
                     0,
                   )
                   .to(shadowRef.current, { opacity: 0, ease: "none" }, 0);
@@ -417,7 +261,7 @@ export default function LogoAnimation({ onReady }) {
         />
 
         {/* BLUE */}
-        <div ref={wBlue} className="absolute inset-0  ">
+        <div className="absolute inset-0">
           <svg
             viewBox="0 0 306 306"
             className="w-full h-full"
@@ -428,7 +272,7 @@ export default function LogoAnimation({ onReady }) {
                 <stop offset="0%" stopColor="#264A9F" />
                 <stop offset="100%" stopColor="#3b6cd1" />
               </linearGradient>
-              {/* Double-layer glow: tight inner bloom + wide outer corona */}
+              {/* Glow used ONLY by the small-scale entrance stroke draw */}
               <filter
                 id="glow-blue"
                 x="-150%"
@@ -448,59 +292,12 @@ export default function LogoAnimation({ onReady }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <filter
-                id="smoke-blue"
-                x="-100%"
-                y="-100%"
-                width="300%"
-                height="300%"
-              >
-                <feGaussianBlur stdDeviation="15" />
-              </filter>
-              <filter
-                id="halo-blue"
-                x="-250%"
-                y="-250%"
-                width="600%"
-                height="600%"
-              >
-                <feGaussianBlur stdDeviation="20" />
-              </filter>
             </defs>
             <path
               ref={fBlue}
               d={PATHS.blue}
               fill="url(#lg-blue)"
               className="glass-panel"
-            />
-            <path
-              ref={gBlue}
-              d={PATHS.blue}
-              fill="#7aa6e8"
-              stroke="#7aa6e8"
-              strokeWidth="1.5"
-              opacity="0"
-            />
-            {/* Outer halo — widest, most diffuse layer */}
-            <path
-              ref={hBlue}
-              d={PATHS.blue}
-              fill="none"
-              stroke="#5a8bd8"
-              strokeWidth="20"
-              strokeLinecap="round"
-              filter="url(#halo-blue)"
-              opacity="0"
-            />
-            <path
-              ref={tBlue}
-              d={PATHS.blue}
-              fill="none"
-              stroke="#a8c8f3"
-              strokeWidth="5"
-              strokeLinecap="round"
-              filter="url(#smoke-blue)"
-              opacity="0"
             />
             <path
               ref={sBlue}
@@ -516,7 +313,7 @@ export default function LogoAnimation({ onReady }) {
         </div>
 
         {/* AZURE */}
-        <div ref={wAzure} className="absolute inset-0">
+        <div className="absolute inset-0">
           <svg
             viewBox="0 0 306 306"
             className="w-full h-full"
@@ -546,54 +343,8 @@ export default function LogoAnimation({ onReady }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <filter
-                id="smoke-azure"
-                x="-100%"
-                y="-100%"
-                width="300%"
-                height="300%"
-              >
-                <feGaussianBlur stdDeviation="9" />
-              </filter>
-              <filter
-                id="halo-azure"
-                x="-250%"
-                y="-250%"
-                width="600%"
-                height="600%"
-              >
-                <feGaussianBlur stdDeviation="20" />
-              </filter>
             </defs>
             <path ref={fAzure} d={PATHS.azure} fill="url(#lg-azure)" />
-            <path
-              ref={gAzure}
-              d={PATHS.azure}
-              fill="#8fb4ee"
-              stroke="#8fb4ee"
-              strokeWidth="1.5"
-              opacity="0"
-            />
-            <path
-              ref={hAzure}
-              d={PATHS.azure}
-              fill="none"
-              stroke="#4272B8"
-              strokeWidth="20"
-              strokeLinecap="round"
-              filter="url(#halo-azure)"
-              opacity="0"
-            />
-            <path
-              ref={tAzure}
-              d={PATHS.azure}
-              fill="none"
-              stroke="#b8d2f5"
-              strokeWidth="5"
-              strokeLinecap="round"
-              filter="url(#smoke-azure)"
-              opacity="0"
-            />
             <path
               ref={sAzure}
               d={PATHS.azure}
@@ -608,7 +359,7 @@ export default function LogoAnimation({ onReady }) {
         </div>
 
         {/* GREEN */}
-        <div ref={wGreen} className="absolute inset-0">
+        <div className="absolute inset-0">
           <svg
             viewBox="0 0 306 306"
             className="w-full h-full"
@@ -638,54 +389,8 @@ export default function LogoAnimation({ onReady }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <filter
-                id="smoke-green"
-                x="-100%"
-                y="-100%"
-                width="300%"
-                height="300%"
-              >
-                <feGaussianBlur stdDeviation="9" />
-              </filter>
-              <filter
-                id="halo-green"
-                x="-250%"
-                y="-250%"
-                width="600%"
-                height="600%"
-              >
-                <feGaussianBlur stdDeviation="20" />
-              </filter>
             </defs>
             <path ref={fGreen} d={PATHS.green} fill="url(#lg-green)" />
-            <path
-              ref={gGreen}
-              d={PATHS.green}
-              fill="#8ee09a"
-              stroke="#8ee09a"
-              strokeWidth="1.5"
-              opacity="0"
-            />
-            <path
-              ref={hGreen}
-              d={PATHS.green}
-              fill="none"
-              stroke="#54BA60"
-              strokeWidth="20"
-              strokeLinecap="round"
-              filter="url(#halo-green)"
-              opacity="0"
-            />
-            <path
-              ref={tGreen}
-              d={PATHS.green}
-              fill="none"
-              stroke="#b6ecbf"
-              strokeWidth="5"
-              strokeLinecap="round"
-              filter="url(#smoke-green)"
-              opacity="0"
-            />
             <path
               ref={sGreen}
               d={PATHS.green}

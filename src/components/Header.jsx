@@ -49,9 +49,6 @@ export default function Header() {
       className="fixed top-0 inset-x-0 z-40 pt-4 pointer-events-none"
     >
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between">
-        {/* Reserved space for the corner-icon LogoAnimation lands in */}
-        {/* <div className="w-20 h-20 shrink-0" aria-hidden="true" /> */}
-
         <nav
           ref={navRef}
           className="pointer-events-auto glass-panel rounded-full px-5 py-2.5 flex items-center gap-5"
@@ -66,6 +63,17 @@ export default function Header() {
             </a>
           ))}
         </nav>
+
+        {/* Landing slot for the corner-icon LogoAnimation. In RTL this is
+            the LAST child, so it sits on the LEFT; the nav sits on the right.
+            The fixed LogoAnimation measures this box (#logo-slot) and shrinks
+            itself to land exactly here, so the icon stays aligned with the
+            header on every screen width. */}
+        <div
+          id="logo-slot"
+          className="w-12 h-12 lg:w-14 lg:h-14 shrink-0"
+          aria-hidden="true"
+        />
       </div>
     </header>
   );
