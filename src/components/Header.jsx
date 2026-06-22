@@ -26,17 +26,19 @@ export default function Header() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Nav starts invisible & a touch above; reveals as hero scrolls out.
-      gsap.set(navRef.current, { opacity: 0, y: -8 });
+      // Nav is visible at the top of the page, then fades out as the user
+      // scrolls toward the content section — clears the stage so the
+      // pill-into-frame transformation can take over.
+      gsap.set(navRef.current, { opacity: 1, y: 0 });
       gsap.to(navRef.current, {
-        opacity: 1,
-        y: 0,
+        opacity: 0,
+        y: -16,
         ease: "none",
         scrollTrigger: {
           trigger: "#hero",
-          start: "top top",
+          start: "center top",
           end: "bottom top",
-          scrub: 0.8,
+          scrub: 0.6,
         },
       });
     }, headerRef);

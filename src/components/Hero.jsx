@@ -9,8 +9,9 @@ export default function Hero() {
     <section
       id="hero"
       className="relative min-h-screen flex items-center pt-64 overflow-hidden"
+      style={{ zIndex: 2 }}
     >
-      <div className="absolute inset-0 grid-overlay pointer-events-none" />
+      {/* <div className="absolute inset-0 grid-overlay pointer-events-none" /> */}
 
       <div className="relative w-full max-w-7xl mx-auto px-6 lg:px-12  gap-12 items-center">
         {/* Left column is empty — reserved for the fixed logo's corner pose */}

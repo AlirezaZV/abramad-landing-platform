@@ -36,8 +36,28 @@ function lerpState(a, b, t) {
     h: lerp(a.h, b.h, t),
     rotate: lerp(a.rotate, b.rotate, t),
     opacity: lerp(a.opacity, b.opacity, t),
+    radius: lerp(a.radius, b.radius, t),
+    fillOpacity: lerp(a.fillOpacity, b.fillOpacity, t),
+    ringOpacity: lerp(a.ringOpacity, b.ringOpacity, t),
   };
 }
+
+// Default pill style — round, filled, no ring.
+const round = (s) => ({
+  radius: 9999,
+  fillOpacity: 1,
+  ringOpacity: 0,
+  ...s,
+});
+
+// Frame style — squared corners, hollow body, gradient ring. Used by the
+// azure pill in the video phase, where it grows to outline the video box.
+const frame = (s) => ({
+  radius: 18,
+  fillOpacity: 0,
+  ringOpacity: 1,
+  ...s,
+});
 
 function rectOf(selector) {
   const el = document.querySelector(selector);
@@ -243,7 +263,7 @@ export default function HeroPills() {
   return (
     <div
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 15 }}
+      style={{ zIndex: 1 }}
       aria-hidden="true"
     >
       <div

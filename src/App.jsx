@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -9,17 +10,13 @@ import Hero from "./components/Hero.jsx";
 import Content from "./components/Content.jsx";
 import Footer from "./components/Footer.jsx";
 import HeroPills from "./components/HeroPills.jsx";
+import FeatureDetail from "./pages/FeatureDetail.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function App() {
-  // During the LogoAnimation entrance the page is the "loading" screen:
-  // dark backdrop, only the logo visible. Once the logo starts moving into
-  // its hero pose, it calls onReady and we reveal the page content.
+function LandingPage() {
   const [ready, setReady] = useState(false);
 
-  // Lock page scroll while loading — no scrollbar should be visible until
-  // the logo has finished its entrance.
   useEffect(() => {
     if (ready) return;
     const html = document.documentElement;
@@ -34,7 +31,6 @@ export default function App() {
     };
   }, [ready]);
 
-  // Smooth scroll once the page is revealed.
   useEffect(() => {
     if (!ready) return;
     const lenis = new Lenis({
@@ -69,16 +65,17 @@ export default function App() {
         <Content />
         <Footer />
       </main>
-
-      {/* Loading backdrop covers everything while the logo plays its entrance */}
-      <div
-        className="fixed inset-0 z-20 pointer-events-none transition-opacity duration-700"
-        style={{
-          opacity: ready ? 0 : 1,
-          background:
-            "radial-gradient(900px 600px at 50% 30%, #11244f 0%, #070B1A 70%)",
-        }}
-      />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/feature/:id" element={<FeatureDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

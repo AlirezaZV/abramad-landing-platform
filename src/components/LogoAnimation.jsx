@@ -64,19 +64,22 @@ const PILLS = [
     key: "blue",
     axis: AXIS_SIDE,
     rot: 45, // up-right
-    bg: "linear-gradient(135deg, #3b6cd170 0%, #264A9F 100%)",
+    bg: "linear-gradient(135deg, #3b6cd1 0%, #264A9F80 100%)",
+    glow: "#3b6cd1",
   },
   {
     key: "azure",
     axis: AXIS_CENTER,
     rot: 0, // straight up, tallest
-    bg: "linear-gradient(180deg, #5a8bd8 0%, #4272B870 100%)",
+    bg: "linear-gradient(180deg, #5a8bd880 0%, #4272B8 100%)",
+    glow: "#5a8bd8",
   },
   {
     key: "green",
     axis: AXIS_SIDE,
     rot: -45, // up-left
-    bg: "linear-gradient(45deg, #54BA60 0%, #7cd58a70 100%)",
+    bg: "linear-gradient(45deg, #54BA60 0%, #7cd58a80 100%)",
+    glow: "#54BA60",
   },
 ];
 
@@ -85,6 +88,7 @@ export default function LogoAnimation({ onReady }) {
   const stageRef = useRef(null);
   const shadowRef = useRef(null);
   const pillRefs = useRef([]);
+  const glowRefs = useRef([]);
 
   // Keep the latest onReady in a ref so the entrance effect can call it
   // without listing onReady as a dep — otherwise every parent re-render
@@ -138,6 +142,7 @@ export default function LogoAnimation({ onReady }) {
       };
 
       // ---------- INITIAL ----------
+      const glows = glowRefs.current;
       gsap.set(stageRef.current, { opacity: 0, scale: 0.9 });
       gsap.set(shadowRef.current, { opacity: 0 });
       PILLS.forEach((p, i) => {
@@ -146,6 +151,12 @@ export default function LogoAnimation({ onReady }) {
           rotation: p.rot,
           scaleY: 0, // collapsed onto the pivot
           opacity: 0,
+        });
+        // Glow host matches the pill's pose so its orbit traces the pill's
+        // own frame. Opacity stays 0 — GSAP fades it in with the shadow halo.
+        gsap.set(glows[i], {
+          transformOrigin: `50% ${originY(p.axis)}%`,
+          rotation: p.rot,
         });
       });
 
@@ -184,9 +195,12 @@ export default function LogoAnimation({ onReady }) {
             onStart: () => onReadyRef.current?.(),
             onComplete: () => {
               ctx.add(() => {
-                // BIG state = cheap state: solid gradient pills + a soft
-                // shadow halo. No looping animation, no filters at hero scale.
-                gsap.to(shadowRef.current, {
+                // BIG state: shadow halo + per-pill orbiting glow loops fade
+                // in together. They fade out via the scroll trigger below.
+                // `.is-hero` on the stage turns on the per-pill border /
+                // backdrop glow and the hover scale-up.
+                stageRef.current.classList.add("is-hero");
+                gsap.to([shadowRef.current, ...glows], {
                   opacity: 1,
                   duration: 0.7,
                   ease: "power2.out",
@@ -202,6 +216,13 @@ export default function LogoAnimation({ onReady }) {
                     start: "top top",
                     end: "bottom top",
                     scrub: 0.8,
+                    onUpdate: (self) => {
+                      // Drop `.is-hero` as soon as the user scrolls so the
+                      // border/backdrop glow and hover affordance turn off
+                      // before the mark visibly shrinks toward the header.
+                      const isHero = self.progress < 0.04;
+                      stageRef.current.classList.toggle("is-hero", isHero);
+                    },
                   },
                 });
                 scrollTl
@@ -215,7 +236,11 @@ export default function LogoAnimation({ onReady }) {
                     },
                     0,
                   )
-                  .to(shadowRef.current, { opacity: 0, ease: "none" }, 0);
+                  .to(
+                    [shadowRef.current, ...glows],
+                    { opacity: 0, ease: "none" },
+                    0,
+                  );
               });
               ScrollTrigger.refresh();
             },
@@ -245,22 +270,46 @@ export default function LogoAnimation({ onReady }) {
           ref={shadowRef}
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{
-            width: "160%",
-            height: "160%",
+            width: "10%",
+            height: "10%",
             opacity: 0,
             background:
               "radial-gradient(50% 50% at 50% 50%, rgba(66, 114, 184, 0.50) 0%, rgba(66, 114, 184, 0.00) 100%)",
           }}
         />
 
-        {/* Three rounded pills make up the mark. */}
+        {/* Orbiting glow halos, one per pill — rendered BEFORE the pills so
+            the colored blob leaks around the gradient instead of covering it. */}
+        {PILLS.map((p, i) => (
+          <div
+            key={`glow-${p.key}`}
+            ref={(el) => (glowRefs.current[i] = el)}
+            style={{ ...pillBox(p.axis), "--pill-glow-color": p.glow }}
+            className="pill-glow-host"
+          >
+            <span className="pill-glow" />
+          </div>
+        ))}
+
+        {/* Three rounded pills make up the mark. Each: host (GSAP target)
+            → halo (colored border glow) → body (glass + gradient) →
+            backdrop (rotating bright spot). The halo + backdrop only
+            paint when the stage carries `.is-hero`. */}
         {PILLS.map((p, i) => (
           <div
             key={p.key}
             ref={(el) => (pillRefs.current[i] = el)}
-            style={{ ...pillBox(p.axis), background: p.bg }}
-            className="glass-panel bg-transparent"
-          />
+            style={{ ...pillBox(p.axis), "--pill-glow-color": p.glow }}
+            className="pill-host"
+          >
+            <div className="pill-halo" />
+            <div className="pill-body glass-panel" style={{ background: p.bg }}>
+              {/* <span className="pill-backdrop" /> */}
+            </div>
+            {/* Animated rim — bright spot orbits the four corners via
+                @property-interpolated --pill-border-x / --pill-border-y. */}
+            <div className="pill-border-glow" />
+          </div>
         ))}
       </div>
     </div>

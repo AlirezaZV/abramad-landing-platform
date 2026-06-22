@@ -113,6 +113,15 @@ body {
   width: 1px;
   height: 10px;
 }
+
+/* Utility — hide scrollbar while keeping scroll functionality */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
 ::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -179,6 +188,235 @@ body {
 .path-trace {
   stroke-dasharray: 1200;
   stroke-dashoffset: 1200;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Per-pill orbiting glow — one blurred colored blob loops around     */
+/*  each pill's center while the logo sits at its big hero pose. Each  */
+/*  host inherits its pill's rotation + transform-origin so the orbit  */
+/*  traces the pill's own frame. Opacity is driven by GSAP (fades in   */
+/*  with the shadow halo, out on scroll) so the loop only paints while */
+/*  the mark is actually big.                                          */
+/* ------------------------------------------------------------------ */
+.pill-glow-host {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill-glow {
+  position: relative;
+  width: 20%;
+  height: 18%;
+  border-radius: 9999px;
+  animation: pill-glow-spin 4s linear infinite;
+  will-change: transform;
+}
+
+.pill-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--pill-glow-color, #ffffff);
+  filter: blur(34px);
+  transform: scale(1.6) translateY(-180%);
+  opacity: 0.9;
+}
+
+@keyframes pill-glow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Per-pill border + backdrop glow — only paints when the stage has  */
+/*  `.is-hero` (added by GSAP at the big hero pose, removed on scroll).*/
+/*  Each pill is now: host (GSAP target) → halo (static border glow)  */
+/*  → body (glass + gradient) → backdrop (rotating bright spot).      */
+/* ------------------------------------------------------------------ */
+.pill-host {
+  pointer-events: none;
+}
+.is-hero .pill-host {
+  pointer-events: auto;
+}
+
+/* Soft colored aura behind the pill — the "border glow". Scales with
+   the body on hover (same scale factor) so the halo stays glued to the
+   pill's perimeter instead of getting eaten by the growing body. */
+.pill-halo {
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  background: var(--pill-glow-color, white);
+  filter: blur(20px);
+  opacity: 0;
+  transform-origin: center center;
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.is-hero .pill-halo {
+  opacity: 0.5;
+}
+.is-hero .pill-host:hover .pill-halo {
+  opacity: 0.9;
+  transform: scale(1.12);
+  filter: blur(30px);
+}
+
+/* Visible glass pill body. Hover is a smooth ease-out scale + a gentle
+   swell of the backdrop-filter blur/saturation, so the glass grows and
+   the lens optics intensify together — no overshoot or bounce.
+
+   NOTE: selector is `.pill-host .pill-body` (specificity 0,2,0) so it
+   beats `.glass-panel`'s own `transition` rule, which is declared later
+   in this stylesheet and would otherwise strip `transform` from the
+   transition list and make the scale snap instantly. */
+.pill-host .pill-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  transform-origin: center center;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-backdrop-filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.is-hero .pill-host:hover .pill-body {
+  transform: scale(1.09);
+  -webkit-backdrop-filter: blur(16px) saturate(220%);
+  backdrop-filter: blur(16px) saturate(220%);
+  filter: brightness(1.14) saturate(1.15) contrast(1.04);
+}
+
+/* Rotating bright spot inside the pill — the "backdrop glow" */
+.pill-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  background: radial-gradient(
+    ellipse 65% 35% at 50% var(--pill-bg-y, 0%),
+    var(--pill-glow-color, white) 0%,
+    transparent 70%
+  );
+  animation: pill-bg-orbit 5s linear infinite;
+  mix-blend-mode: screen;
+}
+.is-hero .pill-backdrop {
+  opacity: 0.6;
+}
+.is-hero .pill-host:hover .pill-backdrop {
+  opacity: 0.85;
+}
+
+@property --pill-bg-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
+@keyframes pill-bg-orbit {
+  0% {
+    --pill-bg-y: 0%;
+  }
+  50% {
+    --pill-bg-y: 100%;
+  }
+  100% {
+    --pill-bg-y: 0%;
+  }
+}
+
+/* Rotating bright spot traveling around the pill's RIM — replicates the
+   sample's inner `:before` whose radial-gradient center hops between the
+   four corners via `--bg-x` / `--bg-y`. We crop the gradient to a thin
+   ring using the `mask-composite: exclude` padding/content-box trick, so
+   only the perimeter shows and the bright spot reads as a glowing edge
+   chasing around the pill. */
+.pill-border-glow {
+  position: absolute;
+  inset: 0px;
+  padding: 0.8px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    45% 28% at var(--pill-border-x, 0%) var(--pill-border-y, 0%),
+    var(--pill-glow-color, rgba(255, 255, 255, 0.589)) 0%,
+    rgba(255, 255, 255, 0.55) 30%,
+    transparent 65%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transform-origin: center center;
+  transition:
+    opacity 0.5s ease,
+    filter 0.5s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  animation: pill-border-orbit 6s linear infinite;
+  will-change: filter, transform;
+}
+.is-hero .pill-border-glow {
+  opacity: 1;
+}
+/* Match the body's hover scale so the rim stays locked to the pill's
+   actual edge as it grows, instead of sitting inside it. */
+.is-hero .pill-host:hover .pill-border-glow {
+  filter: brightness(1.25) saturate(1.2);
+  transform: scale(1.09);
+}
+
+@property --pill-border-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+@property --pill-border-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
+@keyframes pill-border-orbit {
+  0% {
+    --pill-border-x: 0%;
+    --pill-border-y: 0%;
+  }
+  25% {
+    --pill-border-x: 100%;
+    --pill-border-y: 0%;
+  }
+  50% {
+    --pill-border-x: 100%;
+    --pill-border-y: 100%;
+  }
+  75% {
+    --pill-border-x: 0%;
+    --pill-border-y: 100%;
+  }
+  100% {
+    --pill-border-x: 0%;
+    --pill-border-y: 0%;
+  }
 }
 
 /* ------------------------------------------------------------------ */
