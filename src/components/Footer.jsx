@@ -29,11 +29,18 @@ export default function Footer() {
       className="relative min-h-[88vh] flex flex-col items-center justify-center overflow-hidden"
       dir="rtl"
     >
-      {/* HeroPills logo anchor */}
-      <div
-        data-pill-anchor="footer-mark"
-        className="absolute bottom-24 start-10 w-[133px] h-[100px]"
-      />
+      {/* HeroPills logo anchor + logotype, mirroring the hero brand row */}
+      <div className="absolute bottom-24 start-10 flex items-center gap-4">
+        <div
+          data-pill-anchor="footer-mark"
+          className="w-[133px] h-[100px] relative shrink-0"
+        />
+        <img
+          src="/fatype.svg"
+          alt="ابرآمد"
+          className="h-[88px] w-auto object-contain"
+        />
+      </div>
 
       {/* CTA block */}
       <div className="relative text-center px-4 sm:px-8 max-w-4xl mx-auto w-full">

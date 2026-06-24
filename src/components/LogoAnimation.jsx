@@ -302,7 +302,7 @@ export default function LogoAnimation({ onReady }) {
             style={{ ...pillBox(p.axis), "--pill-glow-color": p.glow }}
             className="pill-host"
           >
-            <div className="pill-halo" />
+            {/* <div className="pill-halo" /> */}
             <div className="pill-body glass-panel" style={{ background: p.bg }}>
               {/* <span className="pill-backdrop" /> */}
             </div>

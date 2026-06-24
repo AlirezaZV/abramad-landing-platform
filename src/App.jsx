@@ -7,10 +7,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LogoAnimation from "./components/LogoAnimation.jsx";
 import Header from "./components/Header.jsx";
 import Hero from "./components/Hero.jsx";
-import Content from "./components/Content.jsx";
+import Content, { VideoPlayerBox } from "./components/Content.jsx";
 import Footer from "./components/Footer.jsx";
 import HeroPills from "./components/HeroPills.jsx";
 import FeatureDetail from "./pages/FeatureDetail.jsx";
+import FeatureStrip from "./components/FeatureStrip.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,6 +63,8 @@ function LandingPage() {
         style={{ opacity: ready ? 1 : 0 }}
       >
         <Hero />
+        <VideoPlayerBox />
+        <FeatureStrip />
         <Content />
         <Footer />
       </main>

@@ -423,28 +423,39 @@ body {
 /*  Feature strip — icon hover scales + glows, tooltip lifts in.       */
 /* ------------------------------------------------------------------ */
 .feature-item .feature-icon {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.04),
-    rgba(255, 255, 255, 0.01)
+  isolation: isolate;
+}
+
+.feature-item .feature-icon::before {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(84, 186, 96, 0.55),
+    rgba(66, 114, 184, 0.35) 55%,
+    transparent 80%
   );
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  filter: blur(16px);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .feature-item:hover .feature-icon,
 .feature-item:focus-within .feature-icon {
-  transform: scale(1.18) translateY(-2px);
-  color: #ffffff;
-  background: linear-gradient(
-    180deg,
-    rgba(84, 186, 96, 0.18),
-    rgba(66, 114, 184, 0.18)
-  );
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.18),
-    0 0 18px 2px rgba(84, 186, 96, 0.45),
-    0 0 36px 6px rgba(66, 114, 184, 0.35);
-  filter: drop-shadow(0 0 6px rgba(84, 186, 96, 0.55));
+  transform: scale(1.1) translateY(-2px);
+}
+
+.feature-item:hover .feature-icon::before,
+.feature-item:focus-within .feature-icon::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .feature-item .feature-tooltip {
@@ -456,6 +467,48 @@ body {
    morphs on scroll. The container is kept so it can serve as an anchor. */
 [data-pill-anchor="hero-mark"] > div {
   opacity: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  HeroPills bubble (tabs) phase                                      */
+/*  In the `tabs` phase HeroPills turns the 3 pills into clickable     */
+/*  bubble-shaped nav at the top of the viewport. The label below each */
+/*  bubble fades in via the `is-tabs` class JS toggles on the pill.    */
+/* ------------------------------------------------------------------ */
+.pill-host .pill-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 14px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(230, 236, 255, 0.78);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  text-shadow: 0 2px 8px rgba(7, 11, 26, 0.6);
+}
+
+.pill-host.is-tabs .pill-label {
+  opacity: 1;
+}
+
+.pill-host.is-tabs.is-active-bubble .pill-label {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+/* Pills are visual-only by default (their parent has pointer-events:none).
+   In tabs phase we promote each pill to a clickable nav button. */
+.pill-host.is-tabs {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.pill-host.is-tabs:hover {
+  filter: brightness(1.1) saturate(1.1);
 }
 
 :root {

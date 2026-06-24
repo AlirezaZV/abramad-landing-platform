@@ -393,7 +393,7 @@ const formatTime = (seconds) => {
   return `${toPersianDigits(m)}:${toPersianDigits(String(s).padStart(2, "0"))}`;
 };
 
-function VideoPlayerBox() {
+export function VideoPlayerBox() {
   const videoRef = useRef(null);
   const wrapperRef = useRef(null);
   const [hasStarted, setHasStarted] = useState(false);
@@ -744,22 +744,22 @@ function VideoPlayerBox() {
 /* ------------------------------------------------------------------ */
 /*  Feature strip                                                      */
 /* ------------------------------------------------------------------ */
-function FeatureStrip() {
-  return (
-    <div className="mt-8 sm:mt-10">
-      <div
-        data-pill-anchor="features-strip"
-        className="glass-panel rounded-2xl px-1.5 sm:px-4 py-3 sm:py-4"
-      >
-        <ul className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-1 sm:gap-2 items-stretch">
-          {FEATURES.map((f) => (
-            <FeatureItem key={f.id} feature={f} />
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
+// function FeatureStrip() {
+//   return (
+//     <div className="mt-8 sm:mt-10">
+//       <div
+//         data-pill-anchor="features-strip"
+//         className="glass-panel rounded-2xl px-1.5 sm:px-4 py-3 sm:py-4"
+//       >
+//         <ul className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-1 sm:gap-2 items-stretch">
+//           {FEATURES.map((f) => (
+//             <FeatureItem key={f.id} feature={f} />
+//           ))}
+//         </ul>
+//       </div>
+//     </div>
+//   );
+// }
 
 function FeatureItem({ feature }) {
   const { label, Icon: I, Preview } = feature;
@@ -983,26 +983,6 @@ export default function Content() {
       className="relative overflow-hidden"
       style={{ zIndex: 2 }}
     >
-      {/* <div className="absolute inset-0 grid-overlay pointer-events-none" /> */}
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-14 sm:py-20 lg:py-24">
-        <div className="text-center mb-8 sm:mb-10">
-          <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/40 mb-3">
-            یک نگاه به پلتفرم
-          </p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
-            <span className="shimmer-text">پلتفرم ابرآمد در عمل</span>
-          </h2>
-          <p className="mt-3 sm:mt-4 text-sm sm:text-base text-white/55 max-w-2xl mx-auto leading-relaxed">
-            ویدیوی کوتاه زیر را تماشا کنید و با امکانات کلیدی داشبورد یکپارچه
-            آشنا شوید.
-          </p>
-        </div>
-
-        <VideoPlayerBox />
-        <FeatureStrip />
-      </div>
-
       <PlatformNews />
       <JourneyBanner />
     </section>
