@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PLATFORM_FEATURES } from "../data/platformFeatures.jsx";
+import Reveal from "./Reveal.jsx";
 
 const INTRO_VIDEO_SRC = `${import.meta.env.BASE_URL}${encodeURI(
   "AbrAmadAi Service.mp4",
@@ -459,18 +460,34 @@ export function VideoPlayerBox() {
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="relative mx-auto max-w-6xl">
-      {/* Ambient glow behind the player */}
+    <div className="relative mx-auto max-w-7xl pb-32">
+      {/* Outer ambient halo — broad, soft, brand-tinted */}
       <div
         aria-hidden
-        className="absolute -inset-4 sm:-inset-10 -z-10 rounded-[40px] blur-3xl opacity-60"
+        className="absolute -inset-10 sm:-inset-20 -z-10 rounded-[60px] blur-[80px] opacity-80"
         style={{
           background:
-            "radial-gradient(60% 60% at 50% 40%, rgba(66,114,184,0.45), transparent 70%), radial-gradient(40% 40% at 80% 80%, rgba(84,186,96,0.30), transparent 70%)",
+            "radial-gradient(55% 55% at 50% 35%, rgba(66,114,184,0.65), transparent 75%)",
         }}
       />
 
-      <div className="glass-panel rounded-3xl p-2 sm:p-3">
+      {/* Inner tight glow — hugs the player box edges */}
+      <div
+        aria-hidden
+        className="absolute -inset-2 sm:-inset-4 -z-10 rounded-[36px] blur-2xl opacity-90"
+        style={{
+          background:
+            "radial-gradient(70% 60% at 50% 50%, rgba(66,114,184,0.55), transparent 80%)",
+        }}
+      />
+
+      <div
+        className="glass-panel rounded-3xl p-2 sm:p-3 relative"
+        style={{
+          boxShadow:
+            "0 0 0 1px rgba(66,114,184,0.35), 0 20px 60px -10px rgba(66,114,184,0.55), 0 30px 100px -20px rgba(84,186,96,0.30)",
+        }}
+      >
         <div
           ref={wrapperRef}
           data-pill-anchor="video-box"
@@ -846,14 +863,18 @@ function PlatformNews() {
   return (
     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14 sm:pb-20 lg:pb-24">
       <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-14 sm:mb-20" />
-      <div className="text-center mb-10 sm:mb-14">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
-          <span className="shimmer-text">تازه‌های پلتفرم سازمانی ابرآمد</span>
-        </h2>
-      </div>
+      <Reveal from="up">
+        <div className="text-center mb-10 sm:mb-14">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+            <span className="shimmer-text">تازه‌های پلتفرم سازمانی ابرآمد</span>
+          </h2>
+        </div>
+      </Reveal>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {PLATFORM_FEATURES.map((f) => (
-          <FeatureCard key={f.id} feature={f} />
+        {PLATFORM_FEATURES.map((f, i) => (
+          <Reveal key={f.id} from="up" delay={i * 80}>
+            <FeatureCard feature={f} />
+          </Reveal>
         ))}
       </div>
     </div>
@@ -896,78 +917,82 @@ function JourneyBanner() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
         {/* Heading */}
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
-            این فقط شروع مسیر است
-          </h2>
-          <p className="mt-4 text-white/40 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            در ماه‌های آینده قابلیت‌های بیشتری به پلتفرم اضافه می‌شوند — منتظر
-            باشید
-          </p>
-        </div>
+        <Reveal from="up">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+              این فقط شروع مسیر است
+            </h2>
+            <p className="mt-4 text-white/40 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+              در ماه‌های آینده قابلیت‌های بیشتری به پلتفرم اضافه می‌شوند — منتظر
+              باشید
+            </p>
+          </div>
+        </Reveal>
 
         {/* Milestone ribbon */}
-        <div className="overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hidden">
-          <div className="flex items-start min-w-max mx-auto">
-            {RELEASED.map((label, i) => (
-              <React.Fragment key={i}>
-                <div className="flex flex-col items-center gap-2.5 w-[88px]">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#54BA60]/12 border border-[#54BA60]/38 shadow-[0_0_14px_rgba(84,186,96,0.28)]">
-                    <svg
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      stroke="#54BA60"
-                      strokeWidth="2"
-                      className="w-3.5 h-3.5"
-                    >
-                      <polyline points="2,6 5,9 10,3" />
-                    </svg>
+        <Reveal from="up" delay={120}>
+          <div className="overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hidden">
+            <div className="flex items-start min-w-max mx-auto">
+              {RELEASED.map((label, i) => (
+                <React.Fragment key={i}>
+                  <div className="flex flex-col items-center gap-2.5 w-[88px]">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#54BA60]/12 border border-[#54BA60]/38 shadow-[0_0_14px_rgba(84,186,96,0.28)]">
+                      <svg
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        stroke="#54BA60"
+                        strokeWidth="2"
+                        className="w-3.5 h-3.5"
+                      >
+                        <polyline points="2,6 5,9 10,3" />
+                      </svg>
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] text-white/55 text-center leading-tight max-w-[80px]">
+                      {label}
+                    </span>
                   </div>
-                  <span className="text-[9px] sm:text-[10px] text-white/55 text-center leading-tight max-w-[80px]">
-                    {label}
-                  </span>
-                </div>
-                {i < RELEASED.length - 1 && (
-                  <div className="w-10 h-px bg-gradient-to-r from-[#54BA60]/38 to-[#4272B8]/28 mt-4.5 flex-shrink-0" />
-                )}
-              </React.Fragment>
-            ))}
+                  {i < RELEASED.length - 1 && (
+                    <div className="w-10 h-px bg-gradient-to-r from-[#54BA60]/38 to-[#4272B8]/28 mt-4.5 flex-shrink-0" />
+                  )}
+                </React.Fragment>
+              ))}
 
-            {/* Transition node */}
-            <div className="w-10 h-px bg-white/12 mt-4.5 flex-shrink-0" />
-            <div className="flex flex-col items-center gap-2.5 w-8 mt-0">
-              <div className="w-4 h-9 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-white/20 ring-2 ring-white/10 ring-offset-1 ring-offset-transparent" />
+              {/* Transition node */}
+              <div className="w-10 h-px bg-white/12 mt-4.5 flex-shrink-0" />
+              <div className="flex flex-col items-center gap-2.5 w-8 mt-0">
+                <div className="w-4 h-9 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white/20 ring-2 ring-white/10 ring-offset-1 ring-offset-transparent" />
+                </div>
               </div>
-            </div>
 
-            {UPCOMING.map((label, i) => (
-              <React.Fragment key={i}>
-                <div
-                  className="w-10 h-px bg-white/8 mt-4.5 flex-shrink-0"
-                  style={{ borderTop: "1px dashed rgba(255,255,255,0.1)" }}
-                />
-                <div className="flex flex-col items-center gap-2.5 w-[88px]">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/12">
-                    <svg
-                      viewBox="0 0 14 16"
-                      fill="none"
-                      stroke="rgba(255,255,255,0.25)"
-                      strokeWidth="1.4"
-                      className="w-3.5 h-4"
-                    >
-                      <rect x="1" y="7" width="12" height="8" rx="2" />
-                      <path d="M4 7V5a3 3 0 0 1 6 0v2" />
-                    </svg>
+              {UPCOMING.map((label, i) => (
+                <React.Fragment key={i}>
+                  <div
+                    className="w-10 h-px bg-white/8 mt-4.5 flex-shrink-0"
+                    style={{ borderTop: "1px dashed rgba(255,255,255,0.1)" }}
+                  />
+                  <div className="flex flex-col items-center gap-2.5 w-[88px]">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/12">
+                      <svg
+                        viewBox="0 0 14 16"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="1.4"
+                        className="w-3.5 h-4"
+                      >
+                        <rect x="1" y="7" width="12" height="8" rx="2" />
+                        <path d="M4 7V5a3 3 0 0 1 6 0v2" />
+                      </svg>
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] text-white/22 text-center leading-tight max-w-[80px]">
+                      {label}
+                    </span>
                   </div>
-                  <span className="text-[9px] sm:text-[10px] text-white/22 text-center leading-tight max-w-[80px]">
-                    {label}
-                  </span>
-                </div>
-              </React.Fragment>
-            ))}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </div>
   );

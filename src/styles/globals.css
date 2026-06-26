@@ -293,6 +293,34 @@ body {
     backdrop-filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     filter 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Two-layer gradient crossfade. CSS can't interpolate between two
+   `linear-gradient(...)` values, so we paint BOTH as pseudo-elements
+   and animate their opacity instead — gives a smooth solid↔translucent
+   swap as `.is-hero` is added/removed. */
+.pill-host .pill-body::before,
+.pill-host .pill-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pill-host .pill-body::before {
+  background: var(--pill-bg-solid, transparent);
+  opacity: 1;
+}
+.pill-host .pill-body::after {
+  background: var(--pill-bg-hero, transparent);
+  opacity: 0;
+}
+.is-hero .pill-host .pill-body::before {
+  opacity: 0;
+}
+.is-hero .pill-host .pill-body::after {
+  opacity: 1;
+}
 .is-hero .pill-host:hover .pill-body {
   transform: scale(1.09);
   -webkit-backdrop-filter: blur(16px) saturate(220%);
@@ -685,4 +713,65 @@ body {
         var(--c-dark) calc(var(--glass-reflex-dark) * 8%),
         transparent
       );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Reveal-on-scroll                                                  */
+/*  IntersectionObserver in Reveal.jsx flips data-revealed="true" the */
+/*  first time an element enters the viewport. CSS handles the easing */
+/*  per-direction so we don't pay for a GSAP tween on every section.  */
+/* ------------------------------------------------------------------ */
+.reveal {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+
+.reveal-up {
+  transform: translate3d(0, 48px, 0);
+}
+.reveal-down {
+  transform: translate3d(0, -48px, 0);
+}
+.reveal-left {
+  transform: translate3d(-48px, 0, 0);
+}
+.reveal-right {
+  transform: translate3d(48px, 0, 0);
+}
+.reveal-fade {
+  transform: none;
+}
+
+/* The clip variant gets its own clip-path animation. Kept off the base
+   .reveal selector so absolutely-positioned descendants (e.g. the
+   FeatureItem hover tooltip that overflows the strip upwards) don't get
+   clipped at the reveal element's bounds. */
+.reveal-clip {
+  clip-path: inset(0 0 100% 0);
+  transform: none;
+  will-change: opacity, clip-path;
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    clip-path 1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+
+.reveal[data-revealed="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.reveal-clip[data-revealed="true"] {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
 }

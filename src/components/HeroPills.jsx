@@ -5,17 +5,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * HeroPills — three glass pills lifted into a fixed overlay that morph as
- * the user scrolls:
+ * HeroPills — three glass pills lifted into a fixed overlay that morph from
+ * the hero brand-mark triangular pose directly into the header nav slots.
  *
- *   hero      → triangular brand-mark pose, sitting on the hero anchor
- *   video     → blue rim above the video, azure disc behind play, green rim below
- *   features  → blue/green flatten into top/bottom rules of the strip, azure
- *               becomes a thin vertical spine through the center
- *   footer    → reassemble into the brand-mark pose on the footer anchor
+ *   hero    → triangular brand-mark, sitting on the hero anchor
+ *   header  → each pill lands on its corresponding [data-pill-anchor=
+ *             "header-slot-N"] in the Header bar, becomes a clickable nav
+ *             button labeled for one of: VideoPlayerBox, FeatureStrip,
+ *             Content.
  *
- * Visual treatment: frosted `.glass-panel` + flat brand gradient. No outer
- * glow / box-shadow.
+ * The transition is scrubbed by scroll position between scrollY=0 (hero
+ * pose) and scrollY ≈ 50% viewport (fully docked into header).
  */
 
 function smoothstep(t) {
@@ -36,33 +36,20 @@ function lerpState(a, b, t) {
     h: lerp(a.h, b.h, t),
     rotate: lerp(a.rotate, b.rotate, t),
     opacity: lerp(a.opacity, b.opacity, t),
-    radius: lerp(a.radius, b.radius, t),
-    fillOpacity: lerp(a.fillOpacity, b.fillOpacity, t),
-    ringOpacity: lerp(a.ringOpacity, b.ringOpacity, t),
+    label: lerp(a.label ?? 0, b.label ?? 0, t),
   };
 }
-
-// Default pill style — round, filled, no ring.
-const round = (s) => ({
-  radius: 9999,
-  fillOpacity: 1,
-  ringOpacity: 0,
-  ...s,
-});
-
-// Frame style — squared corners, hollow body, gradient ring. Used by the
-// azure pill in the video phase, where it grows to outline the video box.
-const frame = (s) => ({
-  radius: 18,
-  fillOpacity: 0,
-  ringOpacity: 1,
-  ...s,
-});
 
 function rectOf(selector) {
   const el = document.querySelector(selector);
   return el ? el.getBoundingClientRect() : null;
 }
+
+const PILLS = [
+  { label: "ویدیو", target: "#intro-video" },
+  { label: "امکانات", target: "#features-strip" },
+  { label: "پلتفرم", target: "#content" },
+];
 
 export default function HeroPills() {
   const blueRef = useRef(null);
@@ -74,110 +61,60 @@ export default function HeroPills() {
 
     function stateAt(phase, idx) {
       const hero = rectOf('[data-pill-anchor="hero-mark"]');
-      const video = rectOf('[data-pill-anchor="video-box"]');
-      const play = rectOf('[data-pill-anchor="video-play"]');
-      const features = rectOf('[data-pill-anchor="features-strip"]');
-      const footerMark = rectOf('[data-pill-anchor="footer-mark"]');
+      const slot = rectOf(`[data-pill-anchor="header-slot-${idx}"]`);
       const FB = { x: 0, y: 0, width: 0, height: 0 };
 
-      if (phase === "hero" || phase === "footer") {
-        const r = (phase === "hero" ? hero : footerMark) || FB;
+      if (phase === "hero") {
+        const r = hero || FB;
         const cx = r.x + r.width * 0.5;
         const cy = r.y + r.height * 0.5;
-        // Triangular brand-mark pose. Pivots chosen to approximate the
-        // original inline mark in Hero.jsx.
+        // Final positions match the original layout exactly. The original
+        // file applied a per-pill static (left, top) offset on the element
+        // itself (blue: -8/-10, azure: 0/-20, green: 10/-10); we fold those
+        // offsets into the state values so left/top can stay at 0/0.
         if (idx === 0)
           return {
-            x: cx + 12,
-            y: cy - 38,
+            x: cx + 4,
+            y: cy - 48,
             w: 38,
             h: 96,
             rotate: 45,
             opacity: 1,
+            label: 0,
           };
         if (idx === 1)
           return {
             x: cx - 19,
-            y: cy - 60,
+            y: cy - 80,
             w: 38,
             h: 118,
             rotate: 0,
             opacity: 1,
+            label: 0,
           };
         if (idx === 2)
           return {
-            x: cx - 50,
-            y: cy - 38,
+            x: cx - 40,
+            y: cy - 48,
             w: 38,
             h: 96,
             rotate: -45,
             opacity: 1,
+            label: 0,
           };
       }
 
-      if (phase === "video") {
-        const v = video || FB;
-        const p = play || FB;
-        if (idx === 0)
-          return {
-            x: v.x,
-            y: v.y - 6,
-            w: v.width,
-            h: 5,
-            rotate: 0,
-            opacity: 0.85,
-          };
-        if (idx === 1) {
-          const size = Math.max(p.width, p.height) * 1.6 || 140;
-          return {
-            x: p.x + p.width / 2 - size / 2,
-            y: p.y + p.height / 2 - size / 2,
-            w: size,
-            h: size,
-            rotate: 0,
-            opacity: 0.35,
-          };
-        }
-        if (idx === 2)
-          return {
-            x: v.x,
-            y: v.y + v.height + 1,
-            w: v.width,
-            h: 5,
-            rotate: 0,
-            opacity: 0.85,
-          };
-      }
-
-      if (phase === "features") {
-        const f = features || FB;
-        if (idx === 0)
-          return {
-            x: f.x,
-            y: f.y - 4,
-            w: f.width,
-            h: 3,
-            rotate: 0,
-            opacity: 0.75,
-          };
-        if (idx === 1)
-          return {
-            x: f.x + f.width / 2 - 2,
-            y: f.y + 10,
-            w: 4,
-            h: f.height - 20,
-            rotate: 0,
-            opacity: 0.55,
-          };
-        if (idx === 2)
-          return {
-            x: f.x,
-            y: f.y + f.height + 1,
-            w: f.width,
-            h: 3,
-            rotate: 0,
-            opacity: 0.75,
-          };
+      if (phase === "header") {
+        const r = slot || FB;
+        return {
+          x: r.x,
+          y: r.y,
+          w: r.width || 110,
+          h: r.height || 44,
+          rotate: 0,
+          opacity: 1,
+          label: 1,
+        };
       }
 
       return null;
@@ -186,52 +123,27 @@ export default function HeroPills() {
     function update() {
       const scrollY = window.scrollY;
       const vh = window.innerHeight;
-      const contentEl = document.getElementById("content");
-      const footerEl = document.getElementById("footer");
-      if (!contentEl || !footerEl) return;
-
-      const contentTop = contentEl.offsetTop;
-      const contentH = contentEl.offsetHeight;
-      const footerTop = footerEl.offsetTop;
-
-      const milestones = [
-        { name: "hero", peak: 0 },
-        { name: "video", peak: Math.max(0, contentTop - vh * 0.25) },
-        { name: "features", peak: Math.max(0, contentTop + contentH * 0.6) },
-        { name: "footer", peak: Math.max(0, footerTop - vh * 0.25) },
-      ];
-
-      let from = milestones[0];
-      let to = milestones[0];
-      let t = 1;
-      for (let i = 0; i < milestones.length; i++) {
-        if (i === milestones.length - 1) {
-          from = to = milestones[i];
-          t = 1;
-          break;
-        }
-        if (scrollY <= milestones[i + 1].peak) {
-          from = milestones[i];
-          to = milestones[i + 1];
-          const span = to.peak - from.peak || 1;
-          t = (scrollY - from.peak) / span;
-          break;
-        }
-      }
-      t = Math.max(0, Math.min(1, t));
+      // Pills are fully docked into the header by ~50% viewport scroll.
+      const headerPeak = Math.max(vh * 0.5, 1);
+      const t = Math.max(0, Math.min(1, scrollY / headerPeak));
       const eased = smoothstep(t);
 
       refs.forEach((ref, idx) => {
         const el = ref.current;
         if (!el) return;
-        const fState = stateAt(from.name, idx);
-        const tState = stateAt(to.name, idx);
+        const fState = stateAt("hero", idx);
+        const tState = stateAt("header", idx);
         if (!fState || !tState) return;
         const s = lerpState(fState, tState, eased);
         el.style.width = `${s.w}px`;
         el.style.height = `${s.h}px`;
         el.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${s.rotate}deg)`;
         el.style.opacity = s.opacity;
+        // Clickable only once the pill is mostly settled into its header slot.
+        el.style.pointerEvents = eased > 0.85 ? "auto" : "none";
+
+        const labelEl = el.querySelector("[data-pill-label]");
+        if (labelEl) labelEl.style.opacity = s.label;
       });
     }
 
@@ -258,44 +170,73 @@ export default function HeroPills() {
     };
   }, []);
 
-  // Each pill: existing `.glass-panel` for frosted inset + flat brand
-  // gradient for color. No outer box-shadow.
+  const scrollTo = (target) => {
+    const el = document.querySelector(target);
+    if (!el) return;
+    const top = window.scrollY + el.getBoundingClientRect().top - 80;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  const baseBtnStyle = {
+    left: 0,
+    top: 0,
+    transformOrigin: "center center",
+    willChange: "transform, width, height, opacity",
+    padding: 0,
+    border: 0,
+    cursor: "pointer",
+  };
+
   return (
-    <div
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1 }}
-      aria-hidden="true"
-    >
-      <div
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 30 }}>
+      <button
         ref={blueRef}
-        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#264A9F]/50 to-[#264A9F]/80"
-        style={{
-          left: -8,
-          top: -10,
-          transformOrigin: "center center",
-          willChange: "transform, width, height, opacity",
-        }}
-      />
-      <div
+        type="button"
+        aria-label={PILLS[0].label}
+        onClick={() => scrollTo(PILLS[0].target)}
+        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#264A9F]/50 to-[#264A9F]/80 flex items-center justify-center"
+        style={baseBtnStyle}
+      >
+        <span
+          data-pill-label
+          className="text-xs sm:text-sm font-medium text-white whitespace-nowrap select-none"
+          style={{ opacity: 0 }}
+        >
+          {PILLS[0].label}
+        </span>
+      </button>
+      <button
         ref={azureRef}
-        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#4272B8]/60 to-[#4272B8]/80"
-        style={{
-          left: 0,
-          top: -20,
-          transformOrigin: "center center",
-          willChange: "transform, width, height, opacity",
-        }}
-      />
-      <div
+        type="button"
+        aria-label={PILLS[1].label}
+        onClick={() => scrollTo(PILLS[1].target)}
+        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#4272B8]/60 to-[#4272B8]/80 flex items-center justify-center"
+        style={baseBtnStyle}
+      >
+        <span
+          data-pill-label
+          className="text-xs sm:text-sm font-medium text-white whitespace-nowrap select-none"
+          style={{ opacity: 0 }}
+        >
+          {PILLS[1].label}
+        </span>
+      </button>
+      <button
         ref={greenRef}
-        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#54BA60]/70 to-[#54BA60]/50"
-        style={{
-          left: 10,
-          top: -10,
-          transformOrigin: "center center",
-          willChange: "transform, width, height, opacity",
-        }}
-      />
+        type="button"
+        aria-label={PILLS[2].label}
+        onClick={() => scrollTo(PILLS[2].target)}
+        className="glass-panel absolute rounded-full bg-gradient-to-r from-[#54BA60]/70 to-[#54BA60]/50 flex items-center justify-center"
+        style={baseBtnStyle}
+      >
+        <span
+          data-pill-label
+          className="text-xs sm:text-sm font-medium text-white whitespace-nowrap select-none"
+          style={{ opacity: 0 }}
+        >
+          {PILLS[2].label}
+        </span>
+      </button>
     </div>
   );
 }

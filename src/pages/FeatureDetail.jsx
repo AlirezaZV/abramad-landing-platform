@@ -16,16 +16,24 @@ export default function FeatureDetail() {
           <p className="text-white/40 mb-6 text-lg">فیچر مورد نظر یافت نشد</p>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-[#4272B8] hover:text-white transition-colors text-sm"
+            className="group glass-panel inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white/85 transition-all duration-300 hover:text-white hover:-translate-y-0.5"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(38,74,159,0.35) 0%, rgba(66,114,184,0.35) 55%, rgba(84,186,96,0.35) 100%)",
+              boxShadow:
+                "0 8px 24px -10px rgba(66,114,184,0.55), inset 0 1px 0 rgba(255,255,255,0.12)",
+            }}
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.6"
-              className="w-4 h-4 rotate-180"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
             >
-              <path d="M5 12h14m-7-7 7 7-7 7" />
+              <path d="M19 12H5m7-7-7 7 7 7" />
             </svg>
             بازگشت به صفحه اصلی
           </Link>
@@ -48,29 +56,46 @@ export default function FeatureDetail() {
     <div className="min-h-screen bg-grid" dir="rtl">
       {/* ── Sticky Header ── */}
       <header className="sticky top-0 z-20 glass-panel border-b border-white/[0.06]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 h-14 flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 h-16 flex items-center gap-3">
           <Link
             to="/"
-            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
+            aria-label="بازگشت"
+            className="group glass-panel inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-medium text-white/85 transition-all duration-300 hover:text-white hover:-translate-y-0.5"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(38,74,159,0.4) 0%, rgba(66,114,184,0.4) 55%, rgba(84,186,96,0.4) 100%)",
+              boxShadow:
+                "0 6px 18px -8px rgba(66,114,184,0.55), inset 0 1px 0 rgba(255,255,255,0.14)",
+            }}
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.6"
-              className="w-4 h-4"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
             >
               <path d="M19 12H5m7-7-7 7 7 7" />
             </svg>
-            بازگشت
+            <span>بازگشت</span>
           </Link>
-          <span className="text-white/20 text-xs">‹</span>
-          <span className="text-white/45 text-sm">تازه‌های پلتفرم</span>
-          <span className="text-white/20 text-xs">‹</span>
-          <span className="text-white/80 text-sm font-medium truncate">
+          <span className="hidden sm:inline text-white/20 text-xs">‹</span>
+          <span className="hidden sm:inline text-white/45 text-sm">
+            تازه‌های پلتفرم
+          </span>
+          <span className="hidden sm:inline text-white/20 text-xs">‹</span>
+          <span className="text-white/85 text-sm font-medium truncate">
             {name}
           </span>
-          <span className="ms-auto flex-shrink-0 text-[9px] px-2 py-0.5 rounded-full bg-[#4272B8]/12 text-[#4272B8] border border-[#4272B8]/22">
+          <span
+            className="ms-auto flex-shrink-0 text-[10px] px-2.5 py-1 rounded-full text-white/85 border border-white/15 backdrop-blur"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(66,114,184,0.25) 0%, rgba(84,186,96,0.18) 100%)",
+            }}
+          >
             {tag}
           </span>
         </div>

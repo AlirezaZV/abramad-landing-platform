@@ -59,26 +59,36 @@ const originY = (axis) => {
   return ((total - RADIUS) / total) * 100;
 };
 
+// Each pill carries TWO backgrounds:
+//   bgHero  — translucent gradients used only at the BIG hero pose, where
+//             the glass + backdrop blur do the heavy lifting.
+//   bgSolid — fully opaque gradients used at every other size (sprout,
+//             header icon), where the transparent fill would otherwise
+//             look washed out against the page background.
+// CSS in globals.css picks between them via `.is-hero`.
 const PILLS = [
   {
     key: "blue",
     axis: AXIS_SIDE,
     rot: 45, // up-right
-    bg: "linear-gradient(135deg, #3b6cd1 0%, #264A9F80 100%)",
+    bgHero: "linear-gradient(135deg, #3b6cd150 0%, #264A9F10 100%)",
+    bgSolid: "linear-gradient(135deg, #3b6cd1 0%, #264A9F 100%)",
     glow: "#3b6cd1",
   },
   {
     key: "azure",
     axis: AXIS_CENTER,
     rot: 0, // straight up, tallest
-    bg: "linear-gradient(180deg, #5a8bd880 0%, #4272B8 100%)",
+    bgHero: "linear-gradient(180deg, #5a8bd820 0%, #4272B810 100%)",
+    bgSolid: "linear-gradient(180deg, #5a8bd8 0%, #4272B8 100%)",
     glow: "#5a8bd8",
   },
   {
     key: "green",
     axis: AXIS_SIDE,
     rot: -45, // up-left
-    bg: "linear-gradient(45deg, #54BA60 0%, #7cd58a80 100%)",
+    bgHero: "linear-gradient(45deg, #54BA6020 0%, #7cd58a60 100%)",
+    bgSolid: "linear-gradient(45deg, #54BA60 0%, #7cd58a 100%)",
     glow: "#54BA60",
   },
 ];
@@ -110,8 +120,8 @@ export default function LogoAnimation({ onReady }) {
       const vw = window.innerWidth;
       const isMobile = vw < 768;
 
-      const HERO_SCALE = isMobile ? 4.3 : 5.5;
-      const heroTargetX = isMobile ? vw / 2 : 300;
+      const HERO_SCALE = isMobile ? 4.3 : 2.5;
+      const heroTargetX = isMobile ? vw / 2 : 750;
       const heroTargetY = 0;
       const heroPose = {
         x: heroTargetX - cx,
@@ -299,11 +309,16 @@ export default function LogoAnimation({ onReady }) {
           <div
             key={p.key}
             ref={(el) => (pillRefs.current[i] = el)}
-            style={{ ...pillBox(p.axis), "--pill-glow-color": p.glow }}
+            style={{
+              ...pillBox(p.axis),
+              "--pill-glow-color": p.glow,
+              "--pill-bg-hero": p.bgHero,
+              "--pill-bg-solid": p.bgSolid,
+            }}
             className="pill-host"
           >
             {/* <div className="pill-halo" /> */}
-            <div className="pill-body glass-panel" style={{ background: p.bg }}>
+            <div className="pill-body glass-panel">
               {/* <span className="pill-backdrop" /> */}
             </div>
             {/* Animated rim — bright spot orbits the four corners via

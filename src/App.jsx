@@ -12,6 +12,8 @@ import Footer from "./components/Footer.jsx";
 import HeroPills from "./components/HeroPills.jsx";
 import FeatureDetail from "./pages/FeatureDetail.jsx";
 import FeatureStrip from "./components/FeatureStrip.jsx";
+import LaserFlow from "./components/LaserFlow.jsx";
+import Reveal from "./components/Reveal.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,11 +64,44 @@ function LandingPage() {
         className="relative bg-grid transition-opacity duration-700"
         style={{ opacity: ready ? 1 : 0 }}
       >
-        <Hero />
-        <VideoPlayerBox />
-        <FeatureStrip />
-        <Content />
-        <Footer />
+        <div className="relative isolate">
+          {/* Laser beam background — flows from the top of the hero and
+              visually "lands" on the video player box below. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-0"
+            style={{ height: "calc(100vh + 360px)" }}
+          >
+            <LaserFlow
+              color="#4272B8"
+              horizontalBeamOffset={-0.1}
+              verticalBeamOffset={-0.23}
+              verticalSizing={1.6}
+              horizontalSizing={0.55}
+              wispDensity={3.2}
+              wispIntensity={10.5}
+              fogIntensity={0.1}
+              flowSpeed={0.55}
+            />
+          </div>
+          <div className="relative z-10">
+            <Hero />
+            {/* <Reveal from="up"> */}
+            <section id="intro-video" className="scroll-mt-24">
+              <VideoPlayerBox />
+            </section>
+            {/* </Reveal> */}
+          </div>
+        </div>
+        <Reveal from="up">
+          <section id="features-strip" className="scroll-mt-24">
+            <FeatureStrip />
+          </section>
+        </Reveal>
+        {/* <Content /> */}
+        <Reveal from="up">
+          <Footer />
+        </Reveal>
       </main>
     </>
   );
